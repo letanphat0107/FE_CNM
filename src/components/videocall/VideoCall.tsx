@@ -172,7 +172,7 @@ const VideoCall: React.FC<VideoCallProps> = ({
       await clientRef.current.leave()
     }
     setJoined(false)
-    onLeaveCall?.()
+    // onLeaveCall?.()
     // Đóng cửa sổ sau khi rời khỏi cuộc gọi nếu là tab mới
     // window.close();
   }
