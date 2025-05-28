@@ -99,7 +99,6 @@ const VideoCallPage: React.FC = () => {
           avatarUrl={profile?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'}
           partnerAvatar={decodedPartnerAvt || 'https://randomuser.me/api/portraits/women/1.jpg'}
           partnerName={decodedPartnerName || 'Người dùng'}
-          onLeaveCall={handleLeaveCall} // Truyền hàm xử lý
         />
       </div>
     </div>

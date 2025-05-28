@@ -588,7 +588,7 @@ const ChatBox = ({ currentUserId }: Props) => {
     if (!selectedConversation || !currentUserId) return
 
     // Tạo ID phòng từ conversationId
-    const channelId = "room123"
+    const channelId = selectedConversation.id
 
     // Lấy thông tin người nhận cuộc gọi
     let partnerInfo = {

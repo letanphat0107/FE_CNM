@@ -312,7 +312,9 @@ const MessageItem = ({ message, currentUserId, participants, conversationType, o
       {!isMine && message.type !== 'SYSTEM' && (
         <div className='me-2'>
           <img
-            src={avatar}
+            src={avatar && avatar !== '/default-avatar.png' 
+              ? avatar 
+              : 'https://res.cloudinary.com/dm5ulzy7n/image/upload/v1748307746/z6642578626786_9c3f5e5b519e59140f14558806ec7d00--dfca98f0-c6cb-46ed-b57b-e87de3e712ce.jpg'}
             alt='avatar'
             className='rounded-circle'
             style={{ width: '28px', height: '28px', objectFit: 'cover' }}
