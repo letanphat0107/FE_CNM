@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContainer } from '../../components/layout/AuthContainer'
 import AuthButton from '../../components/common/auth/AuthButton'
@@ -29,6 +29,12 @@ export default function LoginPage() {
   const { setIsAuthenticated, setProfile } = useContext(AppContext)
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('profile')
+  })
 
   let storedDeviceId = uuidv4()
   localStorage.setItem('deviceId', storedDeviceId)
