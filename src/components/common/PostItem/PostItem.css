@@ -55,3 +55,46 @@
 .post-card {
   animation: fadeIn 0.5s ease-out;
 }
+
+/* Shared Post Preview Styles */
+.shared-post-preview {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.shared-post-preview p {
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.shared-post-preview small {
+  font-size: 0.75rem;
+}
+
+.shared-post-image {
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Modal styles */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+}
+
+/* Make sure the textarea doesn't have a visible border on focus */
+.form-control:focus {
+  box-shadow: none;
+}

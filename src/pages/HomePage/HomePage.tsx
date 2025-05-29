@@ -18,6 +18,8 @@ export default function HomePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [fileInputKey, setFileInputKey] = useState<number>(0)
   const [isCreatingPost, setIsCreatingPost] = useState<boolean>(false)
+  const [showShareModal, setShowShareModal] = useState<boolean>(false)
+  const [postToShare, setPostToShare] = useState<Post | null>(null)
 
   // Dữ liệu mẫu phù hợp với interface mới
   const mockUser: User = {
@@ -224,7 +226,7 @@ export default function HomePage() {
   function handleEditButtonClick(post: Post): void {
     setPostContent(post.content)
     setPostPrivacy(post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS')
-    
+
     // If post has attachments, prepare the UI for editing them
     if (post.attachments && post.attachments.length > 0) {
       // In a real implementation, you'd need to convert attachment URLs to File objects
@@ -234,10 +236,10 @@ export default function HomePage() {
     } else {
       setUploadedFiles([])
     }
-    
+
     // Show the post modal in edit mode
     setShowPostModal(true)
-    
+
     // You might want to add an "editingPostId" state to track which post is being edited
     // For a complete implementation, add this state and use it in handleCreatePost
     // to determine if you're updating an existing post or creating a new one
@@ -245,7 +247,7 @@ export default function HomePage() {
 
   function handleDeletePost(postId: number): void {
     // Implement post deletion logic here
-    setPosts(posts.filter(post => post.postId !== postId))
+    setPosts(posts.filter((post) => post.postId !== postId))
     toast.success('Post deleted successfully!')
   }
 
@@ -261,6 +263,23 @@ export default function HomePage() {
 
   function toggleComments(): void {
     setShowComments(!showComments)
+  }
+
+  // Định nghĩa hàm xử lý share post
+  const handleSharePost = async (post: Post) => {
+    // // Hiển thị modal share hoặc xử lý share post
+    // setPostToShare(post)
+    // setShowShareModal(true)
+    try{
+      await feedApi.shareFeed(post.postId, {
+        content: post.content,
+        privacy: post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS'
+      })
+      toast.success('Post shared successfully!')
+    }catch (error) {
+      console.error('Failed to share post:', error)
+      toast.error('Failed to share post. Please try again.')
+    }
   }
 
   return (
@@ -598,6 +617,7 @@ export default function HomePage() {
                 onDelete={(postId) => handleDeletePost(postId)}
                 onSave={(postId) => handleSavePost(postId)}
                 onReport={(postId) => handleReportPost(postId)}
+                onShare={handleSharePost} // Thêm prop onShare vào đây
                 dropdownActions={{
                   edit: true,
                   delete: true,

@@ -1,5 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { Post, User } from 'src/types/post.type'
+import { AppContext } from 'src/contexts/app.context'
+import { toast } from 'react-toastify'
+import feedApi from 'src/apis/feed.api'
 import './PostItem.css'
 
 export interface PostItemProps {
@@ -7,6 +10,7 @@ export interface PostItemProps {
   currentUser?: User | null
   onComment?: (postId: number, content: string) => void
   onLike?: (postId: number) => void
+  onShare?: (post: Post) => void
   onEdit?: (post: Post) => void
   onDelete?: (postId: number) => void
   onReport?: (postId: number) => void
@@ -31,6 +35,7 @@ const PostItem: React.FC<PostItemProps> = ({
   currentUser,
   onComment,
   onLike,
+  onShare,
   onEdit,
   onDelete,
   onReport,
@@ -44,7 +49,13 @@ const PostItem: React.FC<PostItemProps> = ({
   showComments,
   toggleComments
 }) => {
+  const { profile } = useContext(AppContext)
   const [newComment, setNewComment] = useState<string>('')
+  // State cho modal share
+  const [showShareModal, setShowShareModal] = useState<boolean>(false)
+  const [shareContent, setShareContent] = useState<string>('')
+  const [sharePrivacy, setSharePrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>('PUBLIC')
+  const [isSharing, setIsSharing] = useState<boolean>(false)
 
   // Xác định xem post này có hiển thị comments hay không
   const isCommentsVisible = typeof showComments === 'boolean' ? showComments : showComments && showComments[post.postId]
@@ -57,6 +68,40 @@ const PostItem: React.FC<PostItemProps> = ({
     if (!newComment.trim() || !onComment) return
     onComment(post.postId, newComment)
     setNewComment('')
+  }
+
+  // Xử lý share post
+  const handleOpenShareModal = () => {
+    setShareContent('') // Reset content
+    setSharePrivacy('PUBLIC') // Reset privacy setting
+    setShowShareModal(true)
+  }
+
+  // Xử lý submit share
+  const handleShareSubmit = async () => {
+    try {
+      setIsSharing(true)
+
+      // Gọi API để share post
+      await feedApi.shareFeed(post.postId, {
+        content: shareContent,
+        privacy: sharePrivacy
+      })
+
+      // Đóng modal và thông báo thành công
+      setShowShareModal(false)
+      toast.success('Post shared successfully!')
+
+      // Nếu có callback onShare thì gọi
+      if (onShare) {
+        onShare(post)
+      }
+    } catch (error) {
+      console.error('Failed to share post:', error)
+      toast.error('Failed to share post. Please try again.')
+    } finally {
+      setIsSharing(false)
+    }
   }
 
   // Hàm định dạng thời gian
@@ -141,7 +186,7 @@ const PostItem: React.FC<PostItemProps> = ({
             (dropdownActions?.custom && dropdownActions.custom.length > 0)) && (
             <div className='dropdown'>
               <button className='btn' data-bs-toggle='dropdown'>
-                <i className='fas fa-ellipsis-v'></i>
+                <i className='bi bi-three-dots-vertical'></i>
               </button>
               <ul className='dropdown-menu dropdown-menu-end'>
                 {isOwner && dropdownActions?.edit && onEdit && (
@@ -243,7 +288,7 @@ const PostItem: React.FC<PostItemProps> = ({
             </div>
           )}
 
-        {/* Post actions */}
+        {/* Post actions - Cập nhật phần này */}
         <div className='d-flex border-top border-bottom py-2 mt-3'>
           {onLike && (
             <button
@@ -262,6 +307,14 @@ const PostItem: React.FC<PostItemProps> = ({
               <i className='bi bi-chat me-2'></i> Comment ({post.comments?.length || 0})
             </button>
           )}
+
+          {/* Chỉnh sửa nút Share để mở modal */}
+          <button
+            className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
+            onClick={handleOpenShareModal}
+          >
+            <i className='bi bi-share me-2'></i> Share
+          </button>
         </div>
 
         {/* Comments section */}
@@ -321,6 +374,174 @@ const PostItem: React.FC<PostItemProps> = ({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Share Post Modal */}
+        {showShareModal && (
+          <div
+            className='modal show d-block'
+            tabIndex={-1}
+            role='dialog'
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          >
+            <div className='modal-dialog' role='document' style={{ maxWidth: '500px', margin: '2rem auto' }}>
+              <div className='modal-content' style={{ maxHeight: '660px' }}>
+                <div className='modal-header'>
+                  <h5 className='modal-title'>Share post</h5>
+                  <button
+                    type='button'
+                    className='btn-close'
+                    onClick={() => setShowShareModal(false)}
+                    aria-label='Close'
+                  ></button>
+                </div>
+
+                <div className='modal-body p-0'>
+                  <div className='d-flex align-items-center p-3 border-bottom'>
+                    <img
+                      src={profile?.avatar || 'https://via.placeholder.com/40'}
+                      className='rounded-circle me-2'
+                      alt={profile?.displayName || 'Profile'}
+                      width='40'
+                      height='40'
+                    />
+                    <div>
+                      <h6 className='mb-0'>{profile?.displayName || 'User'}</h6>
+                      <div className='dropdown'>
+                        <button
+                          className='btn btn-sm btn-outline-secondary dropdown-toggle'
+                          type='button'
+                          data-bs-toggle='dropdown'
+                          aria-expanded='false'
+                        >
+                          <i className='bi bi-lock-fill me-1'></i>
+                          {sharePrivacy}
+                        </button>
+                        <ul className='dropdown-menu'>
+                          <li>
+                            <button className='dropdown-item' onClick={() => setSharePrivacy('PUBLIC')}>
+                              Public
+                            </button>
+                          </li>
+                          <li>
+                            <button className='dropdown-item' onClick={() => setSharePrivacy('PRIVATE')}>
+                              Only me
+                            </button>
+                          </li>
+                          <li>
+                            <button className='dropdown-item' onClick={() => setSharePrivacy('FRIENDS')}>
+                              Friends
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scroll area for content and shared post */}
+                  <div
+                    className='post-content-scroll'
+                    style={{ maxHeight: '350px', overflowY: 'auto', padding: '16px' }}
+                  >
+                    <textarea
+                      className='form-control border-0 mb-3'
+                      value={shareContent}
+                      onChange={(e) => setShareContent(e.target.value)}
+                      rows={3}
+                      placeholder="What's on your mind?"
+                      style={{ resize: 'none' }}
+                    ></textarea>
+
+                    {/* Shared Post Preview */}
+                    <div className='shared-post-preview border rounded mb-3'>
+                      <div className='p-3'>
+                        <div className='d-flex align-items-center mb-2'>
+                          <img
+                            src={post.createdBy.avatar || 'https://via.placeholder.com/32'}
+                            className='rounded-circle me-2'
+                            alt={post.createdBy.displayName}
+                            width='32'
+                            height='32'
+                            onError={(e) => {
+                              ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/32'
+                            }}
+                          />
+                          <div>
+                            <h6 className='mb-0'>{post.createdBy.displayName}</h6>
+                            <small className='text-muted'>{formatPostTime(post.createdAt)}</small>
+                          </div>
+                        </div>
+
+                        {/* Original post content - truncated */}
+                        <p className='mb-2'>
+                          {post.content.length > 150 ? `${post.content.substring(0, 150)}...` : post.content}
+                        </p>
+
+                        {/* Original post image (if any) - show only first image */}
+                        {post.attachments &&
+                          post.attachments.length > 0 &&
+                          post.attachments.some((att) => att.fileType.startsWith('image/')) && (
+                            <div className='shared-post-image'>
+                              <img
+                                src={
+                                  post.attachments.find((att) => att.fileType.startsWith('image/'))?.fileUrl ||
+                                  'https://via.placeholder.com/300x150?text=Image+not+available'
+                                }
+                                alt='Post image'
+                                className='img-fluid rounded'
+                                style={{ maxHeight: '150px', width: '100%', objectFit: 'cover' }}
+                                onError={(e) => {
+                                  ;(e.target as HTMLImageElement).src =
+                                    'https://via.placeholder.com/300x150?text=Image+not+available'
+                                }}
+                              />
+                              {post.attachments.filter((att) => att.fileType.startsWith('image/')).length > 1 && (
+                                <div className='mt-1 text-center'>
+                                  <small className='text-muted'>
+                                    +{post.attachments.filter((att) => att.fileType.startsWith('image/')).length - 1}{' '}
+                                    more images
+                                  </small>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='d-flex align-items-center justify-content-between border-top border-bottom p-2'>
+                    <div className='ms-2'>Share with your audience</div>
+                    <div className='d-flex align-items-center'>
+                      <button className='btn btn-light rounded-circle me-1'>
+                        <i className='bi bi-people-fill text-primary'></i> {/* bạn bè */}
+                      </button>
+                      <button className='btn btn-light rounded-circle me-1'>
+                        <i className='bi bi-emoji-smile text-warning'></i> {/* emoji */}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='modal-footer'>
+                  <button
+                    type='button'
+                    className='btn btn-primary w-100 rounded-pill'
+                    onClick={handleShareSubmit}
+                    disabled={isSharing}
+                  >
+                    {isSharing ? (
+                      <>
+                        <span className='spinner-border spinner-border-sm me-2' role='status' aria-hidden='true'></span>
+                        Sharing...
+                      </>
+                    ) : (
+                      'Share post'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
