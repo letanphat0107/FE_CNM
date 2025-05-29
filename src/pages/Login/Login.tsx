@@ -58,7 +58,7 @@ export default function LoginPage() {
       onSuccess: (data) => {
         setIsAuthenticated(true)
         setProfile(data.data.data.user)
-        navigate('/')
+        navigate('/home')
         window.location.reload()
         setIsLoading(false)
       },

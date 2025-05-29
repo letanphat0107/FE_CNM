@@ -241,7 +241,10 @@ const Notifications = () => {
 
   // Cập nhật phần render HTML của component Notifications
   return (
-    <div className='notifications-container'>
+    <div
+      className='notifications-container'
+      style={{ boxShadow: '0 2px 5px rgba(0, 0, 0, 0.08)', borderRadius: '8px', maxWidth: '100%'}}
+    >
       <div className='d-flex justify-content-between align-items-center mb-3'>
         <h2 className='fs-3 fw-bold mb-0'>Thông báo mới</h2>
         <button className='btn text-primary border-0'>Xem tất cả</button>
@@ -255,7 +258,7 @@ const Notifications = () => {
           <div className='text-secondary'>Bạn không có thông báo nào</div>
         </div>
       ) : (
-        <div className='notification-list'>
+        <div className='notification-list' style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', scrollbarWidth: 'none' }}>
           {notifications.map((notification) => (
             <div
               key={notification.id}

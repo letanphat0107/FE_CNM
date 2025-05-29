@@ -199,7 +199,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className='homepage'>
+    <div className='homepage' style={{ backgroundColor: '#fafbff', padding: '0px'}}>
       <div className='container pb-5'>
         <div className='row'>
           {/* Main sidebar - with hidden scrollbar */}
@@ -210,7 +210,7 @@ export default function HomePage() {
               overflowY: 'auto', // Cho phép cuộn dọc
               scrollbarWidth: 'none', // Ẩn thanh cuộn trên Firefox
               scrollBehavior: 'smooth',
-              msOverflowStyle: 'none' // Ẩn thanh cuộn trên IE/Edge
+              msOverflowStyle: 'none', // Ẩn thanh cuộn trên IE/Edge
             }}
           >
             {/* CSS inline để ẩn thanh cuộn trên Chrome/Safari/các trình duyệt khác */}

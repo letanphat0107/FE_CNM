@@ -14,7 +14,8 @@ const Messages = () => {
   }
 
   return (
-    <div className='d-flex flex-row w-100 h-100'>
+    <div className='d-flex flex-row w-100 h-100' style={{            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.08)',
+            borderRadius: '8px'}}>
       <Conversations onPress={handleSelectConversation} />
       <ChatBox currentUserId={profile?.userId || '' } />
     </div>

@@ -143,8 +143,6 @@ export default function DashboardPage() {
           style={{
             height: 'calc(100vh - 120px)',
             marginRight: '48px',
-            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.08)',
-            borderRadius: '8px'
           }}
         >
           <Outlet />

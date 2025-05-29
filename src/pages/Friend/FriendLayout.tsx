@@ -11,7 +11,8 @@ export default function FriendLayout() {
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false)
 
   return (
-    <div className='container-fluid p-0' style={{ overflowY: 'hidden' }}>
+    <div className='container-fluid p-0' style={{ overflowY: 'hidden'             ,boxShadow: '0 2px 5px rgba(0, 0, 0, 0.08)',
+            borderRadius: '8px'}}>
       <div className='row g-0'>
         {/* Fixed Sidebar */}
         <div className='col-md-3' style={{ position: 'sticky', top: 0, height: '100vh' }}>
