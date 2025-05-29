@@ -484,21 +484,25 @@ export default function HomePage() {
 
                       <div className='d-flex align-items-center justify-content-between border-top border-bottom p-2'>
                         <div className='ms-2'>Add to your post</div>
-                        <div>
+
+                        <div className='d-flex align-items-center'>
                           <button
                             className='btn btn-light rounded-circle me-1'
                             onClick={() => fileInputRef.current?.click()}
                           >
-                            <i className='bi bi-image text-success'></i>
+                            <i className='fas fa-image text-success'></i> {/* ảnh */}
                           </button>
+
                           <button className='btn btn-light rounded-circle me-1'>
-                            <i className='bi bi-people-fill text-primary'></i>
+                            <i className='fas fa-user-friends text-primary'></i> {/* bạn bè */}
                           </button>
+
                           <button className='btn btn-light rounded-circle me-1'>
-                            <i className='bi bi-emoji-smile text-warning'></i>
+                            <i className='far fa-smile text-warning'></i> {/* emoji */}
                           </button>
+
                           <button className='btn btn-light rounded-circle me-1'>
-                            <i className='bi bi-geo-alt-fill text-danger'></i>
+                            <i className='fas fa-map-marker-alt text-danger'></i> {/* vị trí */}
                           </button>
                         </div>
                       </div>

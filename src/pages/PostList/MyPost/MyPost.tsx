@@ -177,7 +177,8 @@ export default function MyPost() {
                     </div>
                     <div className='dropdown'>
                       <button className='btn' data-bs-toggle='dropdown'>
-                        <i className='bi bi-three-dots-vertical'></i>
+                        <i className="fas fa-ellipsis-v"></i>
+
                       </button>
                       <ul className='dropdown-menu dropdown-menu-end'>
                         <li>
