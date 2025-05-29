@@ -1,4 +1,4 @@
-import { Post } from "src/types/post.type";
+import { PagingPost, Post } from "src/types/post.type";
 import { SuccessResponse } from "src/types/utils.type";
 import http from "src/utils/http";
 
@@ -49,6 +49,9 @@ const feedApi = {
                 'Content-Type': 'multipart/form-data'
             }
         });
+    },
+    getMyFeed(params: { page: number; size: number }) {
+        return http.get<SuccessResponse<PagingPost>>(URL_GET_MY_FEED, { params });
     }
 }
 
