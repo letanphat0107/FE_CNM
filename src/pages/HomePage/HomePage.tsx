@@ -202,7 +202,29 @@ export default function HomePage() {
     <div className='homepage'>
       <div className='container pb-5'>
         <div className='row'>
-          <div className='col-md-8'>
+          {/* Main sidebar - with hidden scrollbar */}
+          <div
+            className='col-md-8 main-content-column'
+            style={{
+              maxHeight: 'calc(100vh - 80px)', // Chiều cao tối đa (trừ đi header)
+              overflowY: 'auto', // Cho phép cuộn dọc
+              scrollbarWidth: 'none', // Ẩn thanh cuộn trên Firefox
+              msOverflowStyle: 'none' // Ẩn thanh cuộn trên IE/Edge
+            }}
+          >
+            {/* CSS inline để ẩn thanh cuộn trên Chrome/Safari/các trình duyệt khác */}
+            <style>
+              {`
+                .main-content-column::-webkit-scrollbar {
+                  display: none;
+                }
+                .main-content-column {
+                  -ms-overflow-style: none;
+                  scrollbar-width: none;
+                }
+              `}
+            </style>
+
             {/* Create post section */}
             <div className='create-post-card card mb-4'>
               <div className='card-body'>
