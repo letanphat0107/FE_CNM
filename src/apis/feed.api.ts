@@ -3,8 +3,8 @@ import { SuccessResponse } from "src/types/utils.type";
 import http from "src/utils/http";
 
 // Feed
-export const URL_POST_NEW_FEED = '/ola-chat/api/posts';
-export const URL_GET_FEED = 'ola-chat/api/posts/1';
+export const URL_POST_NEW_FEED = '/ola-chat/api/posts';  
+export const URL_GET_FEED_BY_ID = 'ola-chat/api/posts/1';
 export const URL_GET_MY_FEED = 'ola-chat/api/posts?page=0&size=10';
 export const URL_DELETE_FEED = "ola-chat/api/posts/13";
 export const URL_UPDATE_FEED = "ola-chat/api/posts/3"; //body newFiles, filesToDelete

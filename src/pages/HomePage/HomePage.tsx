@@ -1,30 +1,9 @@
 import { useContext, useState, useRef } from 'react'
 import './HomePage.css'
 import { AppContext } from 'src/contexts/app.context'
-
-interface User {
-  id: string
-  name: string
-  avatar: string
-  title: string
-}
-
-interface Comment {
-  id: string
-  user: User
-  content: string
-  createdAt: string
-}
-
-interface Post {
-  id: string
-  user: User
-  content: string
-  createdAt: string
-  likes: number
-  comments: Comment[]
-  images?: string[] // Thêm trường để lưu trữ hình ảnh
-}
+import { Attachment, Post, User, Comment } from 'src/types/post.type'
+import feedApi from 'src/apis/feed.api'
+import { toast } from 'react-toastify'
 
 export default function HomePage() {
   const { profile } = useContext(AppContext)
@@ -32,55 +11,66 @@ export default function HomePage() {
   const [showComments, setShowComments] = useState<boolean>(false)
   const [showPostModal, setShowPostModal] = useState<boolean>(false)
   const [postContent, setPostContent] = useState<string>('')
-  const [postPrivacy, setPostPrivacy] = useState<string>('PUBLIC')
+  const [postPrivacy, setPostPrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>('PUBLIC')
   const [isMediaTabActive, setIsMediaTabActive] = useState<boolean>(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [fileInputKey, setFileInputKey] = useState<number>(0)
+  const [isCreatingPost, setIsCreatingPost] = useState<boolean>(false)
+
+  // Dữ liệu mẫu phù hợp với interface mới
+  const mockUser: User = {
+    userId: 'user1',
+    username: 'robert.fox',
+    displayName: profile?.displayName || 'Robert Fox',
+    avatar:
+      profile?.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
+  }
 
   const [posts, setPosts] = useState<Post[]>([
     {
-      id: '1',
-      user: {
-        id: 'user1',
-        name: profile?.displayName || 'Robert Fox',
-        avatar:
-          profile?.avatar ||
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s',
-        title: 'Digital Marketer'
-      },
+      postId: 1,
+      createdBy: mockUser,
       content:
         "In today's fast-paced, digitally driven world, digital marketing is not just a strategy, it's a necessity for businesses of all sizes. ✍️",
-      createdAt: '7 hours ago',
-      likes: 15,
+      attachments: [],
+      privacy: 'PUBLIC',
+      createdAt: new Date().toISOString(),
+      updatedAt: null,
+      likedUsers: [],
       comments: [
         {
-          id: 'comment1',
-          user: {
-            id: 'user2',
-            name: 'Bảo Thông',
-            avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s',
-            title: 'Project Manager'
-          },
+          commentId: 201,
           content: "Absolutely agree! Digital presence is everything in today's market.",
-          createdAt: '5 hours ago'
+          createdAt: new Date().toISOString(),
+          updatedAt: null,
+          commentedBy: {
+            userId: 'user2',
+            username: 'jane.doe',
+            displayName: 'Jane Doe',
+            avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
+          },
+          replies: []
         }
-      ]
+      ],
+      originalPostId: null,
+      originalPost: null
     }
   ])
 
+  // Suggested friends phù hợp với interface User mới
   const suggestedFriends: User[] = [
     {
-      id: 'sf1',
-      name: 'Bảo Thông',
-      avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s',
-      title: 'Financial Analyst'
+      userId: 'sf1',
+      username: 'baothong',
+      displayName: 'Bảo Thông',
+      avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
     },
     {
-      id: 'sf2',
-      name: 'Nguyễn Văn A',
-      avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s',
-      title: 'Project Manager'
+      userId: 'sf2',
+      username: 'nguyenvana',
+      displayName: 'Nguyễn Văn A',
+      avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
     }
   ]
 
@@ -111,56 +101,60 @@ export default function HomePage() {
     setUploadedFiles(newFiles)
   }
 
-  // Xử lý tạo bài viết mới
-  const handleCreatePost = () => {
-    if (!postContent.trim() && uploadedFiles.length === 0) return
+  // Xử lý tạo bài viết mới - đã cập nhật theo cấu trúc mới
+  const handleCreatePost = async () => {
+    try {
+      if (!postContent.trim() && uploadedFiles.length === 0) return
 
-    // Giả định chuyển đổi File thành URL cho bài viết (trong thực tế bạn sẽ upload lên server)
-    const imageUrls = uploadedFiles.map((file) => URL.createObjectURL(file))
+      const formData = new FormData()
+      formData.append('content', postContent)
+      formData.append('privacy', postPrivacy)
 
-    const newPost: Post = {
-      id: `post${Date.now()}`,
-      user: {
-        id: 'currentUser',
-        name: profile?.displayName || 'You',
-        avatar: profile?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
-        title: profile?.bio || 'Software Developer'
-      },
-      content: postContent,
-      createdAt: 'Just now',
-      likes: 0,
-      comments: [],
-      images: imageUrls
+      uploadedFiles.forEach((file) => {
+        formData.append('files', file)
+      })
+
+      setIsCreatingPost(true)
+
+      const response = await feedApi.postNewFeed(formData)
+      const newPost = response.data.data
+      setPosts([newPost, ...posts])
+      setPostContent('')
+      setUploadedFiles([])
+      setShowPostModal(false)
+      toast.success('Post created successfully!')
+    } catch (error) {
+      console.error('Failed to create post:', error)
+
+      toast.error('Failed to create post. Please try again.')
+    } finally {
+      setIsCreatingPost(false)
     }
-
-    setPosts([newPost, ...posts])
-    setPostContent('')
-    setUploadedFiles([])
-    setShowPostModal(false)
   }
 
-  // Xử lý thêm comment
-  const handleAddComment = (postId: string) => {
+  // Xử lý thêm comment - đã cập nhật theo cấu trúc mới
+  const handleAddComment = (postId: number) => {
     if (!newComment.trim()) return
 
     const updatedPosts = posts.map((post) => {
-      if (post.id === postId) {
+      if (post.postId === postId) {
+        const newComment: Comment = {
+          commentId: Date.now(),
+          content: '',
+          createdAt: new Date().toISOString(),
+          updatedAt: null,
+          commentedBy: {
+            userId: profile?.userId || 'current-user',
+            username: profile?.username || 'current.user',
+            displayName: profile?.displayName || 'You',
+            avatar: profile?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
+          },
+          replies: []
+        }
+
         return {
           ...post,
-          comments: [
-            ...post.comments,
-            {
-              id: `comment${Date.now()}`,
-              user: {
-                id: 'currentUser',
-                name: profile?.displayName || 'You',
-                avatar: profile?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
-                title: profile?.bio || 'Software Developer'
-              },
-              content: newComment,
-              createdAt: 'Just now'
-            }
-          ]
+          comments: [...post.comments, newComment]
         }
       }
       return post
@@ -198,8 +192,32 @@ export default function HomePage() {
     }
   }
 
+  // Hàm định dạng thời gian tạo bài viết
+  const formatPostTime = (dateString: string): string => {
+    const now = new Date()
+    const postDate = new Date(dateString)
+    const diffMs = now.getTime() - postDate.getTime()
+    const diffMins = Math.round(diffMs / 60000)
+
+    if (diffMins < 60) {
+      return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`
+    }
+
+    const diffHours = Math.round(diffMins / 60)
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+    }
+
+    const diffDays = Math.round(diffHours / 24)
+    if (diffDays === 1) {
+      return 'Yesterday'
+    }
+
+    return postDate.toLocaleDateString()
+  }
+
   return (
-    <div className='homepage' style={{ backgroundColor: '#fafbff', padding: '0px'}}>
+    <div className='homepage' style={{ backgroundColor: '#fafbff', padding: '0px' }}>
       <div className='container pb-5'>
         <div className='row'>
           {/* Main sidebar - with hidden scrollbar */}
@@ -210,7 +228,7 @@ export default function HomePage() {
               overflowY: 'auto', // Cho phép cuộn dọc
               scrollbarWidth: 'none', // Ẩn thanh cuộn trên Firefox
               scrollBehavior: 'smooth',
-              msOverflowStyle: 'none', // Ẩn thanh cuộn trên IE/Edge
+              msOverflowStyle: 'none' // Ẩn thanh cuộn trên IE/Edge
             }}
           >
             {/* CSS inline để ẩn thanh cuộn trên Chrome/Safari/các trình duyệt khác */}
@@ -330,6 +348,11 @@ export default function HomePage() {
                               <li>
                                 <button className='dropdown-item' onClick={() => setPostPrivacy('PRIVATE')}>
                                   Only me
+                                </button>
+                              </li>
+                              <li>
+                                <button className='dropdown-item' onClick={() => setPostPrivacy('FRIENDS')}>
+                                  Friends
                                 </button>
                               </li>
                             </ul>
@@ -486,9 +509,20 @@ export default function HomePage() {
                         type='button'
                         className='btn btn-primary w-100 rounded-pill'
                         onClick={handleCreatePost}
-                        disabled={!postContent.trim() && uploadedFiles.length === 0}
+                        disabled={(!postContent.trim() && uploadedFiles.length === 0) || isCreatingPost}
                       >
-                        Post
+                        {isCreatingPost ? (
+                          <>
+                            <span
+                              className='spinner-border spinner-border-sm me-2'
+                              role='status'
+                              aria-hidden='true'
+                            ></span>
+                            Posting...
+                          </>
+                        ) : (
+                          'Post'
+                        )}
                       </button>
                     </div>
                   </div>
@@ -498,22 +532,21 @@ export default function HomePage() {
 
             {/* Posts */}
             {posts.map((post) => (
-              <div key={post.id} className='post-card card mb-4'>
+              <div key={post.postId} className='post-card card mb-4'>
                 <div className='card-body'>
                   {/* Post header */}
                   <div className='d-flex justify-content-between align-items-center mb-3'>
                     <div className='d-flex align-items-center'>
                       <img
-                        src={post.user.avatar}
+                        src={post.createdBy.avatar}
                         className='rounded-circle me-2'
-                        alt={post.user.name}
+                        alt={post.createdBy.displayName}
                         width='48'
                         height='48'
                       />
                       <div>
-                        <h6 className='mb-0'>{post.user.name}</h6>
-                        <small className='text-muted'>{post.user.title}</small>
-                        <small className='text-muted d-block'>{post.createdAt}</small>
+                        <h6 className='mb-0'>{post.createdBy.displayName}</h6>
+                        <small className='text-muted d-block'>{formatPostTime(post.createdAt)}</small>
                       </div>
                     </div>
                     <div className='dropdown'>
@@ -538,33 +571,49 @@ export default function HomePage() {
                   <p>{post.content}</p>
 
                   {/* Post images if any */}
-                  {post.images && post.images.length > 0 && (
-                    <div className='post-images mb-3'>
-                      <div className={`image-grid image-grid-${Math.min(post.images.length, 4)}`}>
-                        {post.images.slice(0, 4).map((img, index) => (
-                          <div key={index} className='image-item'>
-                            <img src={img} alt={`Post image ${index + 1}`} className='img-fluid rounded' />
-                          </div>
-                        ))}
-                      </div>
-                      {post.images.length > 4 && (
-                        <div className='text-center mt-2'>
-                          <button className='btn btn-sm btn-light'>+{post.images.length - 4} more</button>
+                  {post.attachments &&
+                    post.attachments.length > 0 &&
+                    post.attachments.some((att) => att.fileType.startsWith('image/')) && (
+                      <div className='post-images mb-3'>
+                        <div
+                          className={`image-grid image-grid-${Math.min(
+                            post.attachments.filter((att) => att.fileType.startsWith('image/')).length,
+                            4
+                          )}`}
+                        >
+                          {post.attachments
+                            .filter((att) => att.fileType.startsWith('image/'))
+                            .slice(0, 4)
+                            .map((attachment, index) => (
+                              <div key={attachment.mediaId} className='image-item'>
+                                <img
+                                  src={attachment.fileUrl}
+                                  alt={attachment.originalFileName}
+                                  className='img-fluid rounded'
+                                />
+                              </div>
+                            ))}
                         </div>
-                      )}
-                    </div>
-                  )}
+                        {post.attachments.filter((att) => att.fileType.startsWith('image/')).length > 4 && (
+                          <div className='text-center mt-2'>
+                            <button className='btn btn-sm btn-light'>
+                              +{post.attachments.filter((att) => att.fileType.startsWith('image/')).length - 4} more
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                   {/* Post actions */}
                   <div className='d-flex border-top border-bottom py-2 mt-3'>
                     <button className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'>
-                      <i className='bi bi-hand-thumbs-up me-2'></i> Like
+                      <i className='bi bi-hand-thumbs-up me-2'></i> Like ({post.likedUsers.length})
                     </button>
                     <button
                       className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
                       onClick={() => setShowComments(!showComments)}
                     >
-                      <i className='bi bi-chat me-2'></i> Comment
+                      <i className='bi bi-chat me-2'></i> Comment ({post.comments?.length || 0})
                     </button>
                   </div>
 
@@ -572,20 +621,20 @@ export default function HomePage() {
                   {showComments && (
                     <div className='comments-section mt-3'>
                       {post.comments.map((comment) => (
-                        <div key={comment.id} className='comment d-flex mb-3'>
+                        <div key={comment.commentId} className='comment d-flex mb-3'>
                           <img
-                            src={comment.user.avatar}
+                            src={comment.commentedBy.avatar}
                             className='rounded-circle me-2'
-                            alt={comment.user.name}
+                            alt={comment.commentedBy.displayName}
                             width='36'
                             height='36'
                           />
                           <div className='comment-bubble'>
                             <div className='bg-light rounded p-2'>
-                              <h6 className='mb-0'>{comment.user.name}</h6>
+                              <h6 className='mb-0'>{comment.commentedBy.displayName}</h6>
                               <p className='mb-0'>{comment.content}</p>
                             </div>
-                            <small className='text-muted'>{comment.createdAt}</small>
+                            <small className='text-muted'>{formatPostTime(comment.createdAt)}</small>
                           </div>
                         </div>
                       ))}
@@ -609,11 +658,11 @@ export default function HomePage() {
                             placeholder='Write a comment...'
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.id)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.postId)}
                           />
                           <button
                             className='btn btn-primary rounded-circle ms-2'
-                            onClick={() => handleAddComment(post.id)}
+                            onClick={() => handleAddComment(post.postId)}
                           >
                             <i className='bi bi-send'></i>
                           </button>
@@ -635,18 +684,21 @@ export default function HomePage() {
               <div className='card-body p-0'>
                 <ul className='list-group list-group-flush'>
                   {suggestedFriends.map((friend) => (
-                    <li key={friend.id} className='list-group-item d-flex justify-content-between align-items-center'>
+                    <li
+                      key={friend.userId}
+                      className='list-group-item d-flex justify-content-between align-items-center'
+                    >
                       <div className='d-flex align-items-center'>
                         <img
                           src={friend.avatar}
                           className='rounded-circle me-2'
-                          alt={friend.name}
+                          alt={friend.displayName}
                           width='40'
                           height='40'
                         />
                         <div>
-                          <h6 className='mb-0'>{friend.name}</h6>
-                          <small className='text-muted'>{friend.title}</small>
+                          <h6 className='mb-0'>{friend.displayName}</h6>
+                          <small className='text-muted'>@{friend.username}</small>
                         </div>
                       </div>
                       <button className='btn btn-sm btn-outline-primary rounded-circle'>
