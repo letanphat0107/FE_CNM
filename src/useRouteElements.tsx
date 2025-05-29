@@ -14,7 +14,6 @@ import Layout from './pages/DashboardPage'
 import Home from './pages/HomePage/HomePage'
 import Profile from './pages/Profile'
 import Notifications from './pages/Notification/Notifications'
-import PostList from './pages/PostList'
 
 import path from './constants/path'
 import SettingsLayout from './pages/Profile/SubSetting/SettingsLayout'
@@ -31,6 +30,8 @@ import GroupList from './pages/Friend/MainContent/GroupList'
 import InviteList from './pages/Friend/MainContent/InviteList'
 import GroupInvites from './pages/Friend/MainContent/GroupInvites'
 import VideoCallPage from './components/videocall/VideoCallPage'
+import MyPost from './pages/PostList/MyPost'
+import SavedPost from './pages/PostList/SavedPost'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
@@ -84,8 +85,8 @@ export default function useRouteElements() {
               path: path.profile.slice(1),
               element: <Profile />,
               children: [
-                { path: 'my-posts', element: <PostList /> },
-                { path: 'saved-posts', element: <PostList /> },
+                { path: 'my-posts', element: <MyPost /> },
+                { path: 'saved-posts', element: <SavedPost /> },
                 {
                   path: 'settings',
                   element: <SettingsLayout />,
