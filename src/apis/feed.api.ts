@@ -1,3 +1,7 @@
+import { Post } from "src/types/post.type";
+import { SuccessResponse } from "src/types/utils.type";
+import http from "src/utils/http";
+
 // Feed
 export const URL_POST_NEW_FEED = '/ola-chat/api/posts';
 export const URL_GET_FEED = 'ola-chat/api/posts/1';
@@ -37,3 +41,15 @@ export const URL_SEARCH_FEED = "ola-chat/api/posts/search";
 export const URL_FAVORITE_FEED = "ola-chat/api/posts/favorites";
 export const URL_ADD_FAVORITE_FEED = "ola-chat/api/posts/8/favorite";
 export const URL_REMOVE_FAVORITE_FEED = "ola-chat/api/posts/9/favorite";
+
+const feedApi = {
+    postNewFeed(body: FormData) {
+        return http.post<SuccessResponse<Post>>(URL_POST_NEW_FEED, body, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    }
+}
+
+export default feedApi;
