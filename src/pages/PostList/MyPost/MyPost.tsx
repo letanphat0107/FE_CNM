@@ -1,9 +1,10 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, useRef } from 'react'
 import { AppContext } from 'src/contexts/app.context'
 import { Post } from 'src/types/post.type'
 import feedApi from 'src/apis/feed.api'
 import { toast } from 'react-toastify'
 import './MyPost.css'
+import PostItem from 'src/components/common/PostItem/PostItem'
 
 export default function MyPost() {
   const { profile } = useContext(AppContext)
@@ -13,6 +14,17 @@ export default function MyPost() {
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [newComment, setNewComment] = useState<string>('')
   const [showComments, setShowComments] = useState<Record<number, boolean>>({})
+
+  // Thêm state để quản lý modal chỉnh sửa
+  const [showEditModal, setShowEditModal] = useState<boolean>(false)
+  const [editingPost, setEditingPost] = useState<Post | null>(null)
+  const [editContent, setEditContent] = useState<string>('')
+  const [editPrivacy, setEditPrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>('PUBLIC')
+  const [uploadedFilesEdit, setUploadedFilesEdit] = useState<File[]>([])
+  const [filesToDelete, setFilesToDelete] = useState<number[]>([])
+  const [isUpdatingPost, setIsUpdatingPost] = useState<boolean>(false)
+  const fileInputEditRef = useRef<HTMLInputElement>(null)
+  const [fileInputEditKey, setFileInputEditKey] = useState<number>(0)
 
   // Fetch posts when component mounts
   useEffect(() => {
@@ -98,8 +110,8 @@ export default function MyPost() {
   }
 
   // Handle adding a comment
-  const handleAddComment = async (postId: number) => {
-    if (!newComment.trim()) return
+  const handleAddComment = async (postId: number, content: string) => {
+    if (!content.trim()) return
 
     try {
       // Here you would call the API to add a comment
@@ -115,14 +127,150 @@ export default function MyPost() {
   // Handle post deletion
   const handleDeletePost = async (postId: number) => {
     try {
-      // Here you would call the API to delete the post
-      // For now, we'll just update the UI optimistically
+      await feedApi.deleteFeed(postId)
       setPosts(posts.filter((post) => post.postId !== postId))
       toast.success('Post deleted successfully!')
     } catch (error) {
       console.error('Failed to delete post:', error)
       toast.error('Failed to delete post.')
     }
+  }
+
+  // Function để mở modal chỉnh sửa
+  const handleEditButtonClick = (post: Post) => {
+    setEditingPost(post)
+    setEditContent(post.content)
+    setEditPrivacy(post.privacy)
+    setUploadedFilesEdit([])
+    setFilesToDelete([])
+    setShowEditModal(true)
+  }
+
+  // Xử lý thay đổi file trong mode chỉnh sửa
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const filesArray = Array.from(e.target.files)
+
+      // Kiểm tra giới hạn tệp
+      const existingImages =
+        editingPost?.attachments.filter(
+          (att) => att.fileType.startsWith('image/') && !filesToDelete.includes(att.mediaId)
+        ).length || 0
+
+      const totalFiles = existingImages + uploadedFilesEdit.length + filesArray.length
+
+      if (totalFiles > MAX_FILES) {
+        alert(`You can only have up to ${MAX_FILES} files in total. Please remove some files first.`)
+        setFileInputEditKey((prev) => prev + 1)
+        return
+      }
+
+      setUploadedFilesEdit((prevFiles) => [...prevFiles, ...filesArray])
+      setFileInputEditKey((prev) => prev + 1)
+    }
+  }
+
+  // Xóa file mới đã tải lên
+  const removeEditFile = (index: number) => {
+    const newFiles = [...uploadedFilesEdit]
+    newFiles.splice(index, 1)
+    setUploadedFilesEdit(newFiles)
+  }
+
+  // Đánh dấu file cũ để xóa
+  const markFileToDelete = (mediaId: number) => {
+    setFilesToDelete((prev) => [...prev, mediaId])
+  }
+
+  // Khôi phục file đã đánh dấu xóa
+  const restoreFile = (mediaId: number) => {
+    setFilesToDelete((prev) => prev.filter((id) => id !== mediaId))
+  }
+
+  // Xử lý cập nhật bài viết
+  const handleUpdatePost = async () => {
+    if (
+      !editingPost ||
+      (!editContent.trim() &&
+        uploadedFilesEdit.length === 0 &&
+        editingPost.attachments.filter((att) => !filesToDelete.includes(att.mediaId)).length === 0)
+    ) {
+      return
+    }
+
+    try {
+      setIsUpdatingPost(true)
+
+      // Tạo FormData để gửi lên server
+      const formData = new FormData()
+      formData.append('content', editContent)
+      formData.append('privacy', editPrivacy)
+
+      // Thêm các file mới
+      uploadedFilesEdit.forEach((file) => {
+        formData.append('newFiles', file)
+      })
+
+      // Thêm các ID file cần xóa
+      filesToDelete.forEach((mediaId) => {
+        formData.append('filesToDelete', mediaId.toString())
+      })
+
+      // Gọi API cập nhật bài viết
+      const response = await feedApi.updateFeed(editingPost.postId, formData)
+      const updatedPost = response.data.data
+
+      // Cập nhật state với bài viết đã cập nhật
+      setPosts((posts) => posts.map((post) => (post.postId === updatedPost.postId ? updatedPost : post)))
+
+      // Đóng modal và reset state
+      setShowEditModal(false)
+      setEditingPost(null)
+      setUploadedFilesEdit([])
+      setFilesToDelete([])
+
+      toast.success('Post updated successfully!')
+    } catch (error) {
+      console.error('Failed to update post:', error)
+      toast.error('Failed to update post. Please try again.')
+    } finally {
+      setIsUpdatingPost(false)
+    }
+  }
+
+  // Constants
+  const MAX_FILES = 10
+
+  // Styles for image grid
+  const gridStyles: Record<number, React.CSSProperties> = {
+    1: {
+      display: 'grid',
+      gridTemplateColumns: '1fr',
+      gridTemplateRows: '300px',
+      gap: '4px'
+    },
+    2: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gridTemplateRows: '200px',
+      gap: '4px'
+    },
+    3: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gridTemplateRows: '150px 150px',
+      gap: '4px'
+    },
+    4: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gridTemplateRows: '150px 150px',
+      gap: '4px'
+    }
+  }
+
+  function handleLikePost(postId: number): void {
+    throw new Error('Function not implemented.')
   }
 
   return (
@@ -155,160 +303,33 @@ export default function MyPost() {
           >
             {/* Posts */}
             {posts.map((post) => (
-              <div key={post.postId} className='post-card card mb-4'>
-                <div className='card-body'>
-                  {/* Post header */}
-                  <div className='d-flex justify-content-between align-items-center mb-3'>
-                    <div className='d-flex align-items-center'>
-                      <img
-                        src={profile?.avatar || 'https://res.cloudinary.com/dm5ulzy7n/image/upload/v1748307746/z6642578626786_9c3f5e5b519e59140f14558806ec7d00--dfca98f0-c6cb-46ed-b57b-e87de3e712ce.jpg'}
-                        className='rounded-circle me-2'
-                        alt={profile?.displayName}
-                        width='48'
-                        height='48'
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).src = 'https://res.cloudinary.com/dm5ulzy7n/image/upload/v1748307746/z6642578626786_9c3f5e5b519e59140f14558806ec7d00--dfca98f0-c6cb-46ed-b57b-e87de3e712ce.jpg'
-                        }}
-                      />
-                      <div>
-                        <h6 className='mb-0'>{profile?.displayName}</h6>
-                        <small className='text-muted d-block'>{formatPostTime(post.createdAt)}</small>
-                      </div>
-                    </div>
-                    <div className='dropdown'>
-                      <button className='btn' data-bs-toggle='dropdown'>
-                        <i className="fas fa-ellipsis-v"></i>
-
-                      </button>
-                      <ul className='dropdown-menu dropdown-menu-end'>
-                        <li>
-                          <button className='dropdown-item'>Edit</button>
-                        </li>
-                        <li>
-                          <button className='dropdown-item text-danger' onClick={() => handleDeletePost(post.postId)}>
-                            Delete
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Post content */}
-                  <p>{post.content}</p>
-
-                  {/* Post images if any */}
-                  {post.attachments &&
-                    post.attachments.length > 0 &&
-                    post.attachments.some((att) => att.fileType.startsWith('image/')) && (
-                      <div className='post-images mb-3'>
-                        <div
-                          className={`image-grid image-grid-${Math.min(
-                            post.attachments.filter((att) => att.fileType.startsWith('image/')).length,
-                            4
-                          )}`}
-                        >
-                          {post.attachments
-                            .filter((att) => att.fileType.startsWith('image/'))
-                            .slice(0, 4)
-                            .map((attachment, index) => (
-                              <div key={attachment.mediaId} className='image-item'>
-                                <img
-                                  src={attachment.fileUrl}
-                                  alt={attachment.originalFileName}
-                                  className='img-fluid rounded'
-                                  onError={(e) => {
-                                    ;(e.target as HTMLImageElement).src =
-                                      'https://via.placeholder.com/300x200?text=Image+not+available'
-                                  }}
-                                />
-                              </div>
-                            ))}
-                        </div>
-                        {post.attachments.filter((att) => att.fileType.startsWith('image/')).length > 4 && (
-                          <div className='text-center mt-2'>
-                            <button className='btn btn-sm btn-light'>
-                              +{post.attachments.filter((att) => att.fileType.startsWith('image/')).length - 4} more
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                  {/* Post actions */}
-                  <div className='d-flex border-top border-bottom py-2 mt-3'>
-                    <button className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'>
-                      <i className='bi bi-hand-thumbs-up me-2'></i> Like ({post.likedUsers.length})
-                    </button>
-                    <button
-                      className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
-                      onClick={() => toggleComments(post.postId)}
-                    >
-                      <i className='bi bi-chat me-2'></i> Comment ({post.comments?.length || 0})
-                    </button>
-                  </div>
-
-                  {/* Comments section */}
-                  {showComments[post.postId] && (
-                    <div className='comments-section mt-3'>
-                      {post.comments && post.comments.length > 0 ? (
-                        post.comments.map((comment) => (
-                          <div key={comment.commentId} className='comment d-flex mb-3'>
-                            <img
-                              src={comment.commentedBy.avatar || 'https://via.placeholder.com/36'}
-                              className='rounded-circle me-2'
-                              alt={comment.commentedBy.displayName}
-                              width='36'
-                              height='36'
-                              onError={(e) => {
-                                ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/36'
-                              }}
-                            />
-                            <div className='comment-bubble'>
-                              <div className='bg-light rounded p-2'>
-                                <h6 className='mb-0'>{comment.commentedBy.displayName}</h6>
-                                <p className='mb-0'>{comment.content}</p>
-                              </div>
-                              <small className='text-muted'>{formatPostTime(comment.createdAt)}</small>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className='text-center text-muted my-3'>No comments yet</p>
-                      )}
-
-                      {/* Add comment */}
-                      <div className='add-comment d-flex mt-3'>
-                        <img
-                          src={profile?.avatar || 'https://via.placeholder.com/36'}
-                          className='rounded-circle me-2'
-                          alt='Your profile'
-                          width='36'
-                          height='36'
-                          onError={(e) => {
-                            ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/36'
-                          }}
-                        />
-                        <div className='input-group'>
-                          <input
-                            type='text'
-                            className='form-control rounded-pill'
-                            placeholder='Write a comment...'
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.postId)}
-                          />
-                          <button
-                            className='btn btn-primary rounded-circle ms-2'
-                            onClick={() => handleAddComment(post.postId)}
-                          >
-                            <i className='bi bi-send'></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <PostItem
+                key={post.postId}
+                post={post}
+                currentUser={
+                  profile
+                    ? {
+                        userId: profile.userId,
+                        username: profile.username,
+                        displayName: profile.displayName,
+                        avatar: profile.avatar || '' // Provide empty string as fallback
+                      }
+                    : null
+                }
+                onComment={(postId, content) => handleAddComment(postId, content)}
+                onLike={(postId) => handleLikePost(postId)}
+                onEdit={(post) => handleEditButtonClick(post)}
+                onDelete={(postId) => handleDeletePost(postId)}
+                // Chỉ hiển thị Edit và Delete cho MyPost
+                dropdownActions={{
+                  edit: true,
+                  delete: true,
+                  save: false,
+                  report: false
+                }}
+                showComments={showComments}
+                toggleComments={(postId) => toggleComments(postId)}
+              />
             ))}
 
             {/* Load more button */}
@@ -329,6 +350,353 @@ export default function MyPost() {
           </div>
         )}
       </div>
+
+      {/* Modal chỉnh sửa bài viết */}
+      {showEditModal && editingPost && (
+        <div className='modal show d-block' tabIndex={-1} role='dialog' style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className='modal-dialog' role='document' style={{ maxWidth: '500px', margin: '2rem auto' }}>
+            <div className='modal-content' style={{ maxHeight: '660px' }}>
+              <div className='modal-header'>
+                <h5 className='modal-title'>Edit post</h5>
+                <button
+                  type='button'
+                  className='btn-close'
+                  onClick={() => setShowEditModal(false)}
+                  aria-label='Close'
+                ></button>
+              </div>
+
+              <div className='modal-body p-0'>
+                <div className='d-flex align-items-center p-3 border-bottom'>
+                  <img
+                    src={profile?.avatar || 'https://via.placeholder.com/40'}
+                    className='rounded-circle me-2'
+                    alt={profile?.displayName || 'Profile'}
+                    width='40'
+                    height='40'
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/40'
+                    }}
+                  />
+                  <div>
+                    <h6 className='mb-0'>{profile?.displayName || 'User'}</h6>
+                    <div className='dropdown'>
+                      <button
+                        className='btn btn-sm btn-outline-secondary dropdown-toggle'
+                        type='button'
+                        data-bs-toggle='dropdown'
+                        aria-expanded='false'
+                      >
+                        <i className='fas fa-lock me-1'></i>
+                        {editPrivacy}
+                      </button>
+                      <ul className='dropdown-menu'>
+                        <li>
+                          <button className='dropdown-item' onClick={() => setEditPrivacy('PUBLIC')}>
+                            Public
+                          </button>
+                        </li>
+                        <li>
+                          <button className='dropdown-item' onClick={() => setEditPrivacy('PRIVATE')}>
+                            Only me
+                          </button>
+                        </li>
+                        <li>
+                          <button className='dropdown-item' onClick={() => setEditPrivacy('FRIENDS')}>
+                            Friends
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Scroll area for content and images */}
+                <div className='post-content-scroll' style={{ maxHeight: '350px', overflowY: 'auto', padding: '16px' }}>
+                  <textarea
+                    className='form-control border-0 mb-3'
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    rows={3}
+                    placeholder="What's on your mind?"
+                    style={{ resize: 'none' }}
+                  ></textarea>
+
+                  {/* Display existing images that are not marked for deletion */}
+                  {editingPost.attachments &&
+                    editingPost.attachments.filter(
+                      (att) => att.fileType.startsWith('image/') && !filesToDelete.includes(att.mediaId)
+                    ).length > 0 && (
+                      <div className='post-images-preview mb-3'>
+                        <h6 className='mb-2'>Current images</h6>
+                        <div
+                          className={`image-grid image-grid-${Math.min(
+                            editingPost.attachments.filter(
+                              (att) => att.fileType.startsWith('image/') && !filesToDelete.includes(att.mediaId)
+                            ).length,
+                            4
+                          )}`}
+                          style={
+                            gridStyles[
+                              Math.min(
+                                editingPost.attachments.filter(
+                                  (att) => att.fileType.startsWith('image/') && !filesToDelete.includes(att.mediaId)
+                                ).length,
+                                4
+                              )
+                            ]
+                          }
+                        >
+                          {editingPost.attachments
+                            .filter((att) => att.fileType.startsWith('image/') && !filesToDelete.includes(att.mediaId))
+                            .slice(0, 4)
+                            .map((attachment, index) => (
+                              <div
+                                key={attachment.mediaId}
+                                className='position-relative'
+                                style={{
+                                  height: '100%',
+                                  width: '100%',
+                                  overflow: 'hidden'
+                                }}
+                              >
+                                <img
+                                  src={attachment.fileUrl}
+                                  alt={attachment.originalFileName}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
+                                  }}
+                                  onError={(e) => {
+                                    ;(e.target as HTMLImageElement).src =
+                                      'https://via.placeholder.com/300x200?text=Image+not+available'
+                                  }}
+                                />
+                                <button
+                                  className='btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-0 m-1'
+                                  style={{ width: '22px', height: '22px', lineHeight: '0' }}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    markFileToDelete(attachment.mediaId)
+                                  }}
+                                >
+                                  <i className='fas fa-times'></i>
+                                </button>
+                              </div>
+                            ))}
+                        </div>
+                        {editingPost.attachments.filter(
+                          (att) => att.fileType.startsWith('image/') && !filesToDelete.includes(att.mediaId)
+                        ).length > 4 && (
+                          <div className='text-center mt-2'>
+                            <button className='btn btn-sm btn-light'>
+                              +
+                              {editingPost.attachments.filter(
+                                (att) => att.fileType.startsWith('image/') && !filesToDelete.includes(att.mediaId)
+                              ).length - 4}{' '}
+                              more
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                  {/* Display files marked for deletion with option to restore */}
+                  {filesToDelete.length > 0 && (
+                    <div className='mb-3'>
+                      <h6 className='mb-2'>Files to be removed</h6>
+                      <div className='d-flex flex-wrap'>
+                        {editingPost.attachments
+                          .filter((att) => filesToDelete.includes(att.mediaId))
+                          .map((attachment) => (
+                            <div key={attachment.mediaId} className='position-relative me-2 mb-2'>
+                              <img
+                                src={attachment.fileUrl}
+                                alt={attachment.originalFileName}
+                                style={{
+                                  width: '80px',
+                                  height: '80px',
+                                  objectFit: 'cover',
+                                  opacity: 0.6
+                                }}
+                                className='rounded'
+                                onError={(e) => {
+                                  ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x80?text=Image'
+                                }}
+                              />
+                              <button
+                                className='btn btn-sm btn-success position-absolute top-0 end-0 rounded-circle p-0'
+                                style={{ width: '24px', height: '24px' }}
+                                onClick={() => restoreFile(attachment.mediaId)}
+                                title='Restore image'
+                              >
+                                <i className='fas fa-undo'></i>
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Display newly uploaded images */}
+                  {uploadedFilesEdit.length > 0 && (
+                    <div className='post-images-preview mb-3'>
+                      <h6 className='mb-2'>New images</h6>
+                      {/* Action buttons above grid */}
+                      <div className='d-flex justify-content-between align-items-center mb-2'>
+                        <button
+                          className='btn d-flex align-items-center'
+                          onClick={(e) => {
+                            e.preventDefault()
+                            fileInputEditRef.current?.click()
+                          }}
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            borderRadius: '20px',
+                            padding: '6px 12px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                            fontSize: '14px',
+                            fontWeight: 500
+                          }}
+                        >
+                          <i className='fas fa-plus-square me-2'></i>
+                          Add more photos
+                        </button>
+                      </div>
+
+                      {/* Image grid */}
+                      <div
+                        className={`image-grid image-grid-${Math.min(uploadedFilesEdit.length, 4)}`}
+                        style={gridStyles[Math.min(uploadedFilesEdit.length, 4)]}
+                      >
+                        {uploadedFilesEdit
+                          .slice(0, uploadedFilesEdit.length > 4 ? 4 : uploadedFilesEdit.length)
+                          .map((file, index) => (
+                            <div
+                              key={index}
+                              className='position-relative'
+                              style={{
+                                height: '100%',
+                                width: '100%',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              {/* If this is the 4th image and we have more than 4 images */}
+                              {index === 3 && uploadedFilesEdit.length > 4 && (
+                                <div className='position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 text-white'>
+                                  <h3>+{uploadedFilesEdit.length - 4}</h3>
+                                </div>
+                              )}
+
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Upload ${index}`}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                              <button
+                                className='btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-0 m-1'
+                                style={{ width: '22px', height: '22px', lineHeight: '0' }}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  removeEditFile(index)
+                                }}
+                              >
+                                <i className='fas fa-times'></i>
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload new images section */}
+                  {uploadedFilesEdit.length === 0 &&
+                    editingPost.attachments.filter(
+                      (att) => !filesToDelete.includes(att.mediaId) && att.fileType.startsWith('image/')
+                    ).length === 0 && (
+                      <div className='text-center py-4 border rounded mb-3'>
+                        <input
+                          type='file'
+                          multiple
+                          className='d-none'
+                          ref={fileInputEditRef}
+                          onChange={handleEditFileChange}
+                          accept='image/*,video/*'
+                          key={`file-input-edit-${fileInputEditKey}`}
+                        />
+                        <button className='btn btn-light' onClick={() => fileInputEditRef.current?.click()}>
+                          <i className='fas fa-plus-circle me-2'></i>
+                          Add photos/videos
+                        </button>
+                        <p className='text-muted small mt-1'>or drag and drop</p>
+                      </div>
+                    )}
+
+                  {/* Hidden input for adding more files */}
+                  <input
+                    type='file'
+                    multiple
+                    className='d-none'
+                    ref={fileInputEditRef}
+                    onChange={handleEditFileChange}
+                    accept='image/*,video/*'
+                    key={`file-input-edit-${fileInputEditKey}`}
+                  />
+                </div>
+
+                <div className='d-flex align-items-center justify-content-between border-top border-bottom p-2'>
+                  <div className='ms-2'>Add to your post</div>
+                  <div>
+                    <button
+                      className='btn btn-light rounded-circle me-1'
+                      onClick={() => fileInputEditRef.current?.click()}
+                    >
+                      <i className='fas fa-image text-success'></i>
+                    </button>
+                    <button className='btn btn-light rounded-circle me-1'>
+                      <i className='fas fa-user-friends text-primary'></i>
+                    </button>
+                    <button className='btn btn-light rounded-circle me-1'>
+                      <i className='far fa-smile text-warning'></i>
+                    </button>
+                    <button className='btn btn-light rounded-circle me-1'>
+                      <i className='fas fa-map-marker-alt text-danger'></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className='modal-footer'>
+                <button
+                  type='button'
+                  className='btn btn-primary w-100 rounded-pill'
+                  onClick={handleUpdatePost}
+                  disabled={
+                    (!editContent.trim() &&
+                      uploadedFilesEdit.length === 0 &&
+                      editingPost.attachments.filter((att) => !filesToDelete.includes(att.mediaId)).length === 0) ||
+                    isUpdatingPost
+                  }
+                >
+                  {isUpdatingPost ? (
+                    <>
+                      <span className='spinner-border spinner-border-sm me-2' role='status' aria-hidden='true'></span>
+                      Updating...
+                    </>
+                  ) : (
+                    'Update'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

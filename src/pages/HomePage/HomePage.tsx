@@ -4,6 +4,7 @@ import { AppContext } from 'src/contexts/app.context'
 import { Attachment, Post, User, Comment } from 'src/types/post.type'
 import feedApi from 'src/apis/feed.api'
 import { toast } from 'react-toastify'
+import PostItem from 'src/components/common/PostItem/PostItem'
 
 export default function HomePage() {
   const { profile } = useContext(AppContext)
@@ -133,14 +134,14 @@ export default function HomePage() {
   }
 
   // Xử lý thêm comment - đã cập nhật theo cấu trúc mới
-  const handleAddComment = (postId: number) => {
-    if (!newComment.trim()) return
+  const handleAddComment = (postId: number, content: string) => {
+    if (!content.trim()) return
 
     const updatedPosts = posts.map((post) => {
       if (post.postId === postId) {
         const newComment: Comment = {
           commentId: Date.now(),
-          content: '',
+          content: content,
           createdAt: new Date().toISOString(),
           updatedAt: null,
           commentedBy: {
@@ -214,6 +215,52 @@ export default function HomePage() {
     }
 
     return postDate.toLocaleDateString()
+  }
+
+  function handleLikePost(postId: number): void {
+    throw new Error('Function not implemented.')
+  }
+
+  function handleEditButtonClick(post: Post): void {
+    setPostContent(post.content)
+    setPostPrivacy(post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS')
+    
+    // If post has attachments, prepare the UI for editing them
+    if (post.attachments && post.attachments.length > 0) {
+      // In a real implementation, you'd need to convert attachment URLs to File objects
+      // This is a simplified approach that would require additional work
+      setIsMediaTabActive(true)
+      // In a real implementation, you would download these files or handle them differently
+    } else {
+      setUploadedFiles([])
+    }
+    
+    // Show the post modal in edit mode
+    setShowPostModal(true)
+    
+    // You might want to add an "editingPostId" state to track which post is being edited
+    // For a complete implementation, add this state and use it in handleCreatePost
+    // to determine if you're updating an existing post or creating a new one
+  }
+
+  function handleDeletePost(postId: number): void {
+    // Implement post deletion logic here
+    setPosts(posts.filter(post => post.postId !== postId))
+    toast.success('Post deleted successfully!')
+  }
+
+  function handleSavePost(postId: number): void {
+    // Implement post saving logic here
+    toast.success('Post saved successfully!')
+  }
+
+  function handleReportPost(postId: number): void {
+    // Implement post reporting logic here
+    toast.info('Post reported successfully!')
+  }
+
+  function toggleComments(): void {
+    setShowComments(!showComments)
   }
 
   return (
@@ -536,146 +583,30 @@ export default function HomePage() {
 
             {/* Posts */}
             {posts.map((post) => (
-              <div key={post.postId} className='post-card card mb-4'>
-                <div className='card-body'>
-                  {/* Post header */}
-                  <div className='d-flex justify-content-between align-items-center mb-3'>
-                    <div className='d-flex align-items-center'>
-                      <img
-                        src={post.createdBy.avatar}
-                        className='rounded-circle me-2'
-                        alt={post.createdBy.displayName}
-                        width='48'
-                        height='48'
-                      />
-                      <div>
-                        <h6 className='mb-0'>{post.createdBy.displayName}</h6>
-                        <small className='text-muted d-block'>{formatPostTime(post.createdAt)}</small>
-                      </div>
-                    </div>
-                    <div className='dropdown'>
-                      <button className='btn' data-bs-toggle='dropdown'>
-                        <i className='bi bi-three-dots-vertical'></i>
-                      </button>
-                      <ul className='dropdown-menu dropdown-menu-end'>
-                        <li>
-                          <button className='dropdown-item'>Edit</button>
-                        </li>
-                        <li>
-                          <button className='dropdown-item'>Delete</button>
-                        </li>
-                        <li>
-                          <button className='dropdown-item'>Report</button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Post content */}
-                  <p>{post.content}</p>
-
-                  {/* Post images if any */}
-                  {post.attachments &&
-                    post.attachments.length > 0 &&
-                    post.attachments.some((att) => att.fileType.startsWith('image/')) && (
-                      <div className='post-images mb-3'>
-                        <div
-                          className={`image-grid image-grid-${Math.min(
-                            post.attachments.filter((att) => att.fileType.startsWith('image/')).length,
-                            4
-                          )}`}
-                        >
-                          {post.attachments
-                            .filter((att) => att.fileType.startsWith('image/'))
-                            .slice(0, 4)
-                            .map((attachment, index) => (
-                              <div key={attachment.mediaId} className='image-item'>
-                                <img
-                                  src={attachment.fileUrl}
-                                  alt={attachment.originalFileName}
-                                  className='img-fluid rounded'
-                                />
-                              </div>
-                            ))}
-                        </div>
-                        {post.attachments.filter((att) => att.fileType.startsWith('image/')).length > 4 && (
-                          <div className='text-center mt-2'>
-                            <button className='btn btn-sm btn-light'>
-                              +{post.attachments.filter((att) => att.fileType.startsWith('image/')).length - 4} more
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                  {/* Post actions */}
-                  <div className='d-flex border-top border-bottom py-2 mt-3'>
-                    <button className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'>
-                      <i className='bi bi-hand-thumbs-up me-2'></i> Like ({post.likedUsers.length})
-                    </button>
-                    <button
-                      className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
-                      onClick={() => setShowComments(!showComments)}
-                    >
-                      <i className='bi bi-chat me-2'></i> Comment ({post.comments?.length || 0})
-                    </button>
-                  </div>
-
-                  {/* Comments section */}
-                  {showComments && (
-                    <div className='comments-section mt-3'>
-                      {post.comments.map((comment) => (
-                        <div key={comment.commentId} className='comment d-flex mb-3'>
-                          <img
-                            src={comment.commentedBy.avatar}
-                            className='rounded-circle me-2'
-                            alt={comment.commentedBy.displayName}
-                            width='36'
-                            height='36'
-                          />
-                          <div className='comment-bubble'>
-                            <div className='bg-light rounded p-2'>
-                              <h6 className='mb-0'>{comment.commentedBy.displayName}</h6>
-                              <p className='mb-0'>{comment.content}</p>
-                            </div>
-                            <small className='text-muted'>{formatPostTime(comment.createdAt)}</small>
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* Add comment */}
-                      <div className='add-comment d-flex mt-3'>
-                        <img
-                          src={
-                            profile?.avatar ||
-                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
-                          }
-                          className='rounded-circle me-2'
-                          alt='Your profile'
-                          width='36'
-                          height='36'
-                        />
-                        <div className='input-group'>
-                          <input
-                            type='text'
-                            className='form-control rounded-pill'
-                            placeholder='Write a comment...'
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.postId)}
-                          />
-                          <button
-                            className='btn btn-primary rounded-circle ms-2'
-                            onClick={() => handleAddComment(post.postId)}
-                          >
-                            <i className='bi bi-send'></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <PostItem
+                key={post.postId}
+                post={post}
+                currentUser={{
+                  userId: profile?.userId || '',
+                  username: profile?.username || '',
+                  displayName: profile?.displayName || '',
+                  avatar: profile?.avatar || ''
+                }}
+                onComment={(postId, content) => handleAddComment(postId, content)}
+                onLike={(postId) => handleLikePost(postId)}
+                onEdit={(post) => handleEditButtonClick(post)}
+                onDelete={(postId) => handleDeletePost(postId)}
+                onSave={(postId) => handleSavePost(postId)}
+                onReport={(postId) => handleReportPost(postId)}
+                dropdownActions={{
+                  edit: true,
+                  delete: true,
+                  save: true,
+                  report: true
+                }}
+                showComments={showComments}
+                toggleComments={toggleComments}
+              />
             ))}
           </div>
 
