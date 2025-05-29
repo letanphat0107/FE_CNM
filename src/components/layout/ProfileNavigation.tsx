@@ -48,12 +48,11 @@ export default function ProfileNavigation() {
         </div>
 
         {/* Navigation */}
-        {/* Navigation */}
         <nav>
           <ul className='list-unstyled mt-3'>
             <li>
               <NavLink
-                to={path.dashboard}
+                to={path.home}
                 className={({ isActive }) =>
                   `d-flex align-items-center py-2 border-bottom pb-3 mb-2 text-decoration-none text-dark fw-medium ${
                     isActive ? 'fw-bold' : ''
