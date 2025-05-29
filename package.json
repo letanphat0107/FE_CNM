@@ -16,6 +16,7 @@
     "agora-rtc-sdk-ng": "^4.23.3",
     "axios": "^1.8.4",
     "cra-template-typescript": "1.2.0",
+    "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.12.2",
     "firebase": "^11.6.0",
     "global": "^4.4.0",

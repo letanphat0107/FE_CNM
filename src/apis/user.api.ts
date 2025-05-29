@@ -2,6 +2,7 @@ import { LoginHistoryItem } from 'src/types/history.type'
 import { User } from 'src/types/user.type'
 import { SuccessResponse } from 'src/types/utils.type'
 import http from 'src/utils/http'
+import { URL_GET_FRIENDS } from './friend.api';
 
 interface BodyUpdateProfile
   extends Omit<User, 'id' | 'role' | 'createdAt' | 'updatedAt' | 'email' | 'authProvider' | 'username' | 'status'> {
@@ -14,6 +15,7 @@ export const URL_UPDATE_PROFILE = 'ola-chat/users/my-update'
 export const URL_UPLOAD_AVATAR = 'ola-chat/users/my-avatar'
 export const URL_GET_HISTORY_LOGIN = 'ola-chat/api/login-history'
 export const URL_GET_Info_FRIEND = 'ola-chat/users/search'
+export const URL_GET_FRIENDS_BY_ID = 'ola-chat/users'
 
 const userApi = {
   getProfile() {
@@ -36,6 +38,9 @@ const userApi = {
   },
   getInfoFriend(query: string) {
     return http.get<SuccessResponse<User>>(`${URL_GET_Info_FRIEND}?query=${encodeURIComponent(query)}`)
+  },
+  getFriendsById(userId: string) {
+    return http.get<SuccessResponse<User>>(`${URL_GET_FRIENDS_BY_ID}/${userId}`)
   }
   
 }
