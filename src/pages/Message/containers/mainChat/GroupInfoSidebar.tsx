@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { FaUserPlus, FaUserMinus, FaTrash, FaUserShield, FaChevronLeft, FaSignOutAlt } from 'react-icons/fa'
 import { BsThreeDots } from 'react-icons/bs'
 import { Conversation, Participant } from 'src/types/message.type'
-import { User } from 'src/types/user.type'
+import './GrSideBar.css'
 import { toast } from 'react-toastify'
 import groupAPI from 'src/apis/group.api'
 import { Modal } from 'react-bootstrap'
@@ -563,64 +563,71 @@ const GroupInfoSidebar = ({
         </Modal.Footer>
       </Modal>
 
-      {/* Thêm modal chuyển quyền trưởng nhóm */}
-      <Modal show={showTransferOwnerModal} onHide={() => setShowTransferOwnerModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Chuyển quyền trưởng nhóm</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Chọn người để chuyển quyền trưởng nhóm trước khi rời nhóm:</p>
-          <div className='mt-3' style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            {participants
-              .filter(p => p.userId !== currentUserId && p.role === 'MODERATOR')
-              .map(user => (
-                <div 
-                  key={user.userId} 
-                  className={`d-flex align-items-center p-2 border rounded mb-2 ${
-                    selectedNewOwner === user.userId ? 'bg-light' : ''
-                  }`}
-                  onClick={() => setSelectedNewOwner(user.userId)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img
-                    src={user.avatar || 'https://via.placeholder.com/40'}
-                    alt={user.displayName}
-                    className='rounded-circle me-2'
-                    style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                  />
-                  <div>
-                    <div>{user.displayName}</div>
-                    <small className='text-muted'>Phó nhóm</small>
-                  </div>
-                  {selectedNewOwner === user.userId && (
-                    <div className='ms-auto'>
-                      <i className='fas fa-check text-primary'></i>
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-            {participants.filter(p => p.userId !== currentUserId && p.role === 'MODERATOR').length === 0 && (
-              <div className='alert alert-warning'>
-                <p>Không có phó nhóm nào để chuyển quyền. Vui lòng thêm ít nhất một phó nhóm trước khi rời nhóm.</p>
+<Modal show={showTransferOwnerModal} onHide={() => setShowTransferOwnerModal(false)} centered>
+  <Modal.Header closeButton>
+    <Modal.Title>Chuyển quyền trưởng nhóm</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <p>Chọn người để chuyển quyền trưởng nhóm trước khi rời nhóm:</p>
+    <div className='mt-3' style={{ maxHeight: '300px', overflowY: 'auto' }}>
+      {participants
+        .filter(p => p.userId !== currentUserId && p.role === 'MODERATOR')
+        .map(user => (
+          <div 
+            key={user.userId} 
+            className={`user-select-box d-flex align-items-center p-2 border rounded mb-2 ${
+              selectedNewOwner === user.userId ? 'selected' : ''
+            }`}
+            onClick={() => setSelectedNewOwner(user.userId)}
+            style={{ cursor: 'pointer' }}
+          >
+            <img
+              src={user.avatar || 'https://via.placeholder.com/40'}
+              alt={user.displayName}
+              className='rounded-circle me-2'
+              style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+            />
+            <div>
+              <div>{user.displayName}</div>
+              <small className='text-muted'>Phó nhóm</small>
+            </div>
+            {selectedNewOwner === user.userId && (
+              <div className='ms-auto'>
+                <i className='fas fa-check text-primary'></i>
               </div>
             )}
           </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <button className='btn btn-secondary' onClick={() => setShowTransferOwnerModal(false)}>
-            Hủy
-          </button>
-          <button 
-            className='btn btn-primary' 
-            onClick={handleTransferOwnership}
-            disabled={!selectedNewOwner || participants.filter(p => p.role === 'MODERATOR').length === 0}
-            style={{backgroundColor: '#4C68D5'}}
-          >
-            Chuyển quyền & Rời nhóm
-          </button>
-        </Modal.Footer>
-      </Modal>
+        ))}
+
+      {participants.filter(p => p.userId !== currentUserId && p.role === 'MODERATOR').length === 0 && (
+        <div className='alert alert-warning'>
+          <p>Không có phó nhóm nào để chuyển quyền. Vui lòng thêm ít nhất một phó nhóm trước khi rời nhóm.</p>
+        </div>
+      )}
+    </div>
+  </Modal.Body>
+  <Modal.Footer>
+    <button className='btn btn-secondary' onClick={() => setShowTransferOwnerModal(false)}>
+      Hủy
+    </button>
+    <button 
+      className='btn'
+      onClick={handleTransferOwnership}
+      disabled={!selectedNewOwner || participants.filter(p => p.role === 'MODERATOR').length === 0}
+      style={{
+        backgroundColor: '#4C68D5',
+        color: 'white',
+        fontWeight: 500,
+        padding: '8px 16px',
+        borderRadius: '6px',
+        opacity: !selectedNewOwner ? 0.6 : 1
+      }}
+    >
+      Chuyển quyền & Rời nhóm
+    </button>
+  </Modal.Footer>
+</Modal>
+
 
       {/* Modal xác nhận xóa thành viên */}
       <Modal show={confirmAction?.type === 'delete'} onHide={() => setConfirmAction(null)} centered size='sm'>

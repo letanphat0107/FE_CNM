@@ -1,0 +1,235 @@
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header,
+.modal-footer {
+  border: none;
+  padding: 1rem 1.5rem;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.modal-body p {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.user-select-box {
+  transition: background-color 0.3s ease;
+}
+
+.user-select-box:hover {
+  background-color: #f1f4ff;
+}
+
+.user-select-box.selected {
+  background-color: #e1e9ff;
+  border-color: #4C68D5;
+}
+
+.user-select-box .fa-check {
+  font-size: 1rem;
+}
+
+/* Modal xác nhận xóa thành viên */
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header,
+.modal-footer {
+  border: none;
+  padding: 1rem 1.5rem;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.modal-body p {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.form-check-input {
+  cursor: pointer;
+  border-color: #4C68D5;
+}
+
+.form-check-label {
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border: none;
+  font-weight: 500;
+}
+
+.btn-danger:hover {
+  background-color: #bb2d3b;
+}
+
+.btn-secondary {
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #4C68D5;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #3b54ac;
+}
+/* === MODAL CHUNG === */
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border: none;
+}
+
+.modal-header,
+.modal-footer {
+  border: none;
+  padding: 1rem 1.5rem;
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.modal-body p {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* === BUTTON === */
+.btn-primary {
+  background-color: #4C68D5;
+  border: none;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #3a56af;
+}
+
+.btn-secondary {
+  font-weight: 500;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border: none;
+  font-weight: 500;
+}
+
+.btn-danger:hover {
+  background-color: #b02a37;
+}
+
+/* === Container & Scroll === */
+.member-list-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.member-list-scroll {
+  flex: 1;
+  max-height: calc(100vh - 290px);
+  overflow-y: auto;
+}
+
+/* === Member item chung === */
+.member-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.member-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* === Avatar === */
+.member-item img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 0.75rem;
+}
+
+/* === Dropdown Options === */
+.member-options {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 5px;
+  z-index: 10;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  width: 150px;
+  border: 1px solid #e9ecef;
+  padding: 0.25rem 0;
+}
+
+.member-options .dropdown-item {
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: start;
+}
+
+.member-options .dropdown-item:hover {
+  background-color: #f1f3f5;
+  color: #4C68D5;
+}
+
+.member-options .dropdown-item.text-danger:hover {
+  color: #dc3545;
+}
+
+/* === Add Member Button === */
+.add-member-btn {
+  border-color: #4C68D5;
+  color: #4C68D5;
+  transition: background-color 0.2s;
+}
+
+.add-member-btn:hover {
+  background-color: #e9efff;
+}
+
+/* === Header Section === */
+.member-header {
+  padding: 1rem;
+  border-bottom: 1px solid #ced4da;
+  background-color: #ffffff;
+}
+
+.member-header h5 {
+  margin-bottom: 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
