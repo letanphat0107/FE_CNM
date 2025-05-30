@@ -252,7 +252,7 @@ const GroupInfoSidebar = ({
                 {participants.slice(0, 5).map((participant) => (
                   <div key={participant.userId} className='d-flex align-items-center p-2'>
                     <img
-                      src={participant.avatar || 'https://via.placeholder.com/40'}
+                      src={participant.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'}
                       alt={participant.displayName}
                       className='rounded-circle me-2'
                       style={{ width: '40px', height: '40px', objectFit: 'cover' }}
@@ -343,7 +343,7 @@ const GroupInfoSidebar = ({
                   .map((admin) => (
                     <div key={admin.userId} className='d-flex align-items-center p-2 border-bottom'>
                       <img
-                        src={admin.avatar || 'https://via.placeholder.com/40'}
+                        src={admin.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'}
                         alt={admin.displayName}
                         className='rounded-circle me-2'
                         style={{ width: '40px', height: '40px', objectFit: 'cover' }}
@@ -361,7 +361,7 @@ const GroupInfoSidebar = ({
                   .map((mod) => (
                     <div key={mod.userId} className='d-flex align-items-center p-2 border-bottom position-relative'>
                       <img
-                        src={mod.avatar || 'https://via.placeholder.com/40'}
+                        src={mod.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'}
                         alt={mod.displayName}
                         className='rounded-circle me-2'
                         style={{ width: '40px', height: '40px', objectFit: 'cover' }}
@@ -441,7 +441,7 @@ const GroupInfoSidebar = ({
                   .map((member) => (
                     <div key={member.userId} className='d-flex align-items-center p-2 border-bottom'>
                       <img
-                        src={member.avatar || 'https://via.placeholder.com/40'}
+                        src={member.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'}
                         alt={member.displayName}
                         className='rounded-circle me-2'
                         style={{ width: '40px', height: '40px', objectFit: 'cover' }}
