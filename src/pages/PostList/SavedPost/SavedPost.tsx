@@ -182,10 +182,6 @@ export default function SavedPosts() {
       <div className='container py-4'>
         <div className='row'>
           <div className='col-md-8'>
-            <h5 className='mb-4'>
-              <i className='bi bi-bookmark-fill me-2'></i> Saved Posts
-            </h5>
-
             {loading ? (
               <div className='text-center py-5'>
                 <div className='spinner-border text-primary' role='status'>

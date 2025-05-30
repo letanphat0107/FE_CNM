@@ -329,7 +329,7 @@ export default function MyPost() {
   }
 
   return (
-    <div className='my-posts-container'>
+    <div className='my-posts-container bg-transparent'>
       <div className='container py-4'>
         <div className='row'>
           {/* Main content column */}
@@ -518,7 +518,8 @@ export default function MyPost() {
                             className='bg-light rounded-circle p-2 d-flex align-items-center justify-content-center'
                             style={{ width: '40px', height: '40px' }}
                           >
-                            <i className='bi bi-pencil'></i>
+                            <i className="fas fa-pencil-alt"></i>
+
                           </div>
                         </div>
                         <div className='ms-3'>

@@ -536,12 +536,9 @@ const PostItem: React.FC<PostItemProps> = ({
                   onClick={handleShowLikesModal}
                   style={{ cursor: 'pointer' }}
                 >
-                  <div
-                    className='bg-primary rounded-circle p-1 me-1 d-flex align-items-center justify-content-center'
-                    style={{ width: '20px', height: '20px' }}
-                  >
-                    <i className='fas fa-thumbs-up text-white small'></i>
-                  </div>
+           
+                       <i className="fas fa-thumbs-up me-2 " style={{color: "#1878f3"}}></i> 
+          
                   <span className='text-muted small'>{post.likedUsers.length}</span>
                 </div>
               )}
@@ -576,7 +573,8 @@ const PostItem: React.FC<PostItemProps> = ({
                 onClick={handleToggleLike}
                 disabled={isLiking}
               >
-                <i className={`bi ${isLiked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'} me-2`}></i>
+                <i className={`me-2 ${isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up'}`}></i>
+
                 {isLiking ? 'Liking' : isLiked ? 'Liked' : 'Like'}
               </button>
             )}
@@ -586,7 +584,7 @@ const PostItem: React.FC<PostItemProps> = ({
                 className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
                 onClick={() => toggleComments(post.postId)}
               >
-                <i className='bi bi-chat me-2'></i> Comment
+                <i className='far fa-comment me-2' ></i> Comment
               </button>
             )}
 
@@ -595,7 +593,7 @@ const PostItem: React.FC<PostItemProps> = ({
               className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
               onClick={handleOpenShareModal}
             >
-              <i className='bi bi-share me-2'></i> Share
+              <i className='fas fa-share me-2'></i> Share
             </button>
           </div>
 

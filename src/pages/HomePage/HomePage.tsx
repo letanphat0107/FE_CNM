@@ -392,7 +392,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className='homepage' style={{ backgroundColor: '#fafbff', padding: '0px' }}>
+    <div className='homepage bg-transparent' style={{padding: '0px' }}>
       <div className='container pb-5'>
         <div className='row'>
           {/* Main sidebar - with hidden scrollbar */}

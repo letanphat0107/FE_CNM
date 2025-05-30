@@ -242,7 +242,7 @@ const Notifications = () => {
   // Cập nhật phần render HTML của component Notifications
   return (
     <div
-      className='notifications-container'
+      className='notifications-container bg-white'
       style={{ boxShadow: '0 2px 5px rgba(0, 0, 0, 0.08)', borderRadius: '8px', maxWidth: '100%'}}
     >
       <div className='d-flex justify-content-between align-items-center mb-3'>

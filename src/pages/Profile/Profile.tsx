@@ -38,7 +38,6 @@ export default function Profile() {
           position: 'sticky',
           top: 0,
           zIndex: 1000,
-          backgroundColor: 'white',
           boxShadow: `
       0 -2px 5px rgba(0, 0, 0, 0.08),   /* Top */
       0  2px 5px rgba(0, 0, 0, 0.08),   /* Bottom */
@@ -64,7 +63,8 @@ export default function Profile() {
               borderTopLeftRadius: '12px',
               borderTopRightRadius: '12px',
               borderBottomLeftRadius: '0px',
-              borderBottomRightRadius: '0px'
+              borderBottomRightRadius: '0px',
+              boxShadow: "none"
             }}
           >
             <div className='row'>

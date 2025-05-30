@@ -136,10 +136,10 @@ export default function DashboardPage() {
   return (
     <div className='d-flex flex-column vh-100'>
       <Header />
-      <div className='d-flex flex-grow-1 bac' style={{ backgroundColor: '#fafbff', padding: '30px 48px' }}>
+      <div className='d-flex flex-grow-1 bac' style={{ backgroundColor: '#f8f8f8', padding: '30px 48px' }}>
         <Sidebar />
         <main
-          className='flex-grow-1 ms-5 me-0 bg-white'
+          className='flex-grow-1 ms-5 me-0'
           style={{
             height: 'calc(100vh - 120px)',
             marginRight: '48px',
