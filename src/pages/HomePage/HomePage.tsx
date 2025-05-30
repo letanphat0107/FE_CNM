@@ -203,29 +203,6 @@ export default function HomePage() {
     }
   }
 
-  // Hàm định dạng thời gian tạo bài viết
-  const formatPostTime = (dateString: string): string => {
-    const now = new Date()
-    const postDate = new Date(dateString)
-    const diffMs = now.getTime() - postDate.getTime()
-    const diffMins = Math.round(diffMs / 60000)
-
-    if (diffMins < 60) {
-      return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`
-    }
-
-    const diffHours = Math.round(diffMins / 60)
-    if (diffHours < 24) {
-      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
-    }
-
-    const diffDays = Math.round(diffHours / 24)
-    if (diffDays === 1) {
-      return 'Yesterday'
-    }
-
-    return postDate.toLocaleDateString()
-  }
 
   // Xử lý like post
   const handleLikePost = async (postId: number) => {
@@ -371,6 +348,21 @@ export default function HomePage() {
     setShowComments(!showComments)
   }
 
+  // Định nghĩa hàm xử lý share post
+  const handleSharePost = async (post: Post, content: string, privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS') => {
+    try {
+      // // Gọi API share post
+      // await feedApi.shareFeed(post.postId, {
+      //   content: content,
+      //   privacy: privacy 
+      // })
+
+      toast.success('Post shared successfully!')
+    } catch (error) {
+      console.error('Failed to share post:', error)
+      toast.error('Failed to share post. Please try again.')
+    }
+  }
 
   return (
     <div className='homepage bg-transparent' style={{padding: '0px' }}>
@@ -741,7 +733,7 @@ export default function HomePage() {
                   onDelete={(postId) => handleDeletePost(postId)}
                   onSave={(postId) => handleSavePost(postId)}
                   onReport={(postId) => handleReportPost(postId)}
-                  onShare={(postId) => handleSavePost(postId)}
+                  onShare={(post, content, privacy) => handleSharePost(post, content, privacy)}
                   dropdownActions={{
                     edit: true,
                     delete: true,

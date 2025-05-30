@@ -65,8 +65,12 @@ const feedApi = {
       }
     })
   },
-    shareFeed(postId: number, body: { content: string; privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS' }) {
-    return http.post<SuccessResponse<Post>>(`${URL_SHARE_FEED}/${postId}/share`, body)
+  shareFeed(postId: number, body: FormData) {
+    return http.post<SuccessResponse<Post>>(`${URL_SHARE_FEED}/${postId}/share`, body,{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   },
   updatePrivacy(postId: number, body: { privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS' }) {
     return http.put<SuccessResponse<Post>>(`${URL_UPDATE_PRIVACY}/${postId}/privacy`, body)
@@ -83,7 +87,7 @@ const feedApi = {
   getListUserLiked(postId: number, params: { page: number; size: number }) {
     return http.get<SuccessResponse<User[]>>(`${URL_GET_LIST_USER_LIKED}/${postId}/likes`, { params })
   },
-  getHomeFeed(){
+  getHomeFeed() {
     return http.get<SuccessResponse<Post[]>>(URL_GET_HOME_FEED)
   },
   getFavoriteFeed() {
@@ -98,6 +102,3 @@ const feedApi = {
 }
 
 export default feedApi
-
-
-

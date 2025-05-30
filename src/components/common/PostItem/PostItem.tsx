@@ -10,7 +10,7 @@ export interface PostItemProps {
   currentUser?: User | null
   onComment?: (postId: number, content: string) => void
   onLike?: (postId: number) => void
-  onShare?: (postId: number) => void
+  onShare?: (post: Post, content: string, privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS') => void
   onEdit?: (post: Post) => void
   onDelete?: (postId: number) => void
   onReport?: (postId: number) => void
@@ -183,24 +183,15 @@ const PostItem: React.FC<PostItemProps> = ({
   const handleShareSubmit = async () => {
     try {
       setIsSharing(true)
-
-      // Gọi API để share post
-      await feedApi.shareFeed(post.postId, {
-        content: shareContent,
-        privacy: sharePrivacy
-      })
-
-      // Đóng modal và thông báo thành công
-      setShowShareModal(false)
-      toast.success('Post shared successfully!')
-
-      // Nếu có callback onShare thì gọi
+      const formData = new FormData()
+      formData.append('content', shareContent)
+      formData.append('privacy', sharePrivacy)
+      await feedApi.shareFeed(post.postId, formData)
       if (onShare) {
-        onShare(post.postId)
+        onShare(post, shareContent, sharePrivacy)
       }
+      setShowShareModal(false)
     } catch (error) {
-      console.error('Failed to share post:', error)
-      toast.error('Failed to share post. Please try again.')
     } finally {
       setIsSharing(false)
     }
@@ -371,8 +362,6 @@ const PostItem: React.FC<PostItemProps> = ({
       // Gọi API thông qua callback
       await onSave(post.postId)
 
-      // Thông báo thành công
-      toast.success(isSaved ? 'Post removed from favorites' : 'Post added to favorites')
     } catch (error) {
       // Nếu có lỗi, hoàn tác trạng thái
       setIsSaved(isSaved)
@@ -536,9 +525,8 @@ const PostItem: React.FC<PostItemProps> = ({
                   onClick={handleShowLikesModal}
                   style={{ cursor: 'pointer' }}
                 >
-           
-                       <i className="fas fa-thumbs-up me-2 " style={{color: "#1878f3"}}></i> 
-          
+                  <i className='fas fa-thumbs-up me-2 ' style={{ color: '#1878f3' }}></i>
+
                   <span className='text-muted small'>{post.likedUsers.length}</span>
                 </div>
               )}
@@ -584,7 +572,7 @@ const PostItem: React.FC<PostItemProps> = ({
                 className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
                 onClick={() => toggleComments(post.postId)}
               >
-                <i className='far fa-comment me-2' ></i> Comment
+                <i className='far fa-comment me-2'></i> Comment
               </button>
             )}
 
