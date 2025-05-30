@@ -339,17 +339,17 @@ export default function MyPost() {
             {loading && posts.length === 0 ? (
               <div className='text-center py-5'>
                 <div className='spinner-border text-primary' role='status'>
-                  <span className='visually-hidden'>Loading...</span>
+                  <span className='visually-hidden'>Đang tải...</span>
                 </div>
-                <p className='mt-2'>Loading your posts...</p>
+                <p className='mt-2'>Đang tải bảng tin của bạn...</p>
               </div>
             ) : posts.length === 0 ? (
               <div className='text-center py-5'>
                 <div className='mb-3'>
                   <i className='bi bi-file-earmark-post fs-1 text-muted'></i>
                 </div>
-                <h5>You haven't created any posts yet</h5>
-                <p className='text-muted'>When you create posts, they will appear here.</p>
+                <h5>Bạn chưa đăng bài viết nào</h5>
+                <p className='text-muted'>Khi bạn tạo bài viết, nó sẽ xuất hiện ở đây</p>
               </div>
             ) : (
               <div
@@ -407,7 +407,7 @@ export default function MyPost() {
                             role='status'
                             aria-hidden='true'
                           ></span>
-                          Loading...
+                          Đang tải...
                         </>
                       ) : (
                         'Load More'
@@ -494,13 +494,13 @@ export default function MyPost() {
                   </div>
                   <div className='d-flex justify-content-between small'>
                     <span>
-                      <i className='bi bi-globe me-1 text-success'></i> Public
+                      <i className='bi bi-globe me-1 text-success'></i> Công khai
                     </span>
                     <span>
-                      <i className='bi bi-people-fill me-1 text-primary'></i> Friends
+                      <i className='bi bi-people-fill me-1 text-primary'></i> Bạn bè
                     </span>
                     <span>
-                      <i className='bi bi-lock-fill me-1 text-danger'></i> Private
+                      <i className='bi bi-lock-fill me-1 text-danger'></i> Riêng tư
                     </span>
                   </div>
                 </div>
@@ -509,7 +509,7 @@ export default function MyPost() {
 
             <div className='card mt-4'>
               <div className='card-header bg-white'>
-                <h5 className='mb-0'>Recent Activity</h5>
+                <h5 className='mb-0'>Hoạt động gần đây</h5>
               </div>
               <div className='card-body p-0'>
                 <ul className='list-group list-group-flush'>
@@ -526,7 +526,7 @@ export default function MyPost() {
                           </div>
                         </div>
                         <div className='ms-3'>
-                          <div>You posted {formatPostTime(post.createdAt)}</div>
+                          <div>Bạn đã đăng {formatPostTime(post.createdAt)}</div>
                           <small className='text-muted'>{post.content}</small>
                         </div>
                       </div>
@@ -535,7 +535,7 @@ export default function MyPost() {
                 </ul>
               </div>
               <div className='card-footer bg-white text-center'>
-                <button className='btn btn-sm btn-outline-primary rounded-pill'>See All Activity</button>
+                <button className='btn btn-sm btn-outline-primary rounded-pill'>Xem tất cả hoạt động</button>
               </div>
             </div>
 

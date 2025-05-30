@@ -66,7 +66,7 @@ export default function ProfileNavigation() {
                   height='20'
                   className='me-2'
                 />
-                Home
+                Trang chủ
               </NavLink>
             </li>
             <li>
@@ -85,7 +85,7 @@ export default function ProfileNavigation() {
                   height='20'
                   className='me-2'
                 />
-                Profile
+                Trang cá nhân
               </NavLink>
             </li>
             <li>
@@ -104,7 +104,7 @@ export default function ProfileNavigation() {
                   height='20'
                   className='me-2'
                 />
-                Messages
+                Tin nhắn
               </NavLink>
             </li>
             <li>
@@ -123,7 +123,7 @@ export default function ProfileNavigation() {
                   height='20'
                   className='me-2'
                 />
-                Friends
+                Bạn bè
               </NavLink>
             </li>
             <li>
@@ -140,7 +140,7 @@ export default function ProfileNavigation() {
                   height='20'
                   className='me-2'
                 />
-                Notifications
+                Thông báo
               </NavLink>
             </li>
           </ul>
