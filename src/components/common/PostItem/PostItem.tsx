@@ -81,7 +81,7 @@ const PostItem: React.FC<PostItemProps> = ({
   const isCommentsVisible = typeof showComments === 'boolean' ? showComments : showComments && showComments[post.postId]
 
   // Kiểm tra xem người dùng hiện tại có phải là người tạo bài viết không
-  const isOwner = currentUser && currentUser.userId === currentUser.userId // post.createdBy.userId
+  const isOwner = currentUser && post.createdBy && currentUser.userId === post.createdBy.userId
 
   // Thêm state cho hiển thị modal shares, likes, comments
   const [showSharesModal, setShowSharesModal] = useState<boolean>(false)
