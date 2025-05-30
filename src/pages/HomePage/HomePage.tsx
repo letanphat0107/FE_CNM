@@ -617,12 +617,13 @@ export default function HomePage() {
                 onDelete={(postId) => handleDeletePost(postId)}
                 onSave={(postId) => handleSavePost(postId)}
                 onReport={(postId) => handleReportPost(postId)}
-                onShare={handleSharePost} // Thêm prop onShare vào đây
+                onShare={handleSharePost} 
                 dropdownActions={{
                   edit: true,
                   delete: true,
                   save: true,
-                  report: true
+                  report: true,
+                  editAudience: false,
                 }}
                 showComments={showComments}
                 toggleComments={toggleComments}

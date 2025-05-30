@@ -273,6 +273,24 @@ export default function MyPost() {
     throw new Error('Function not implemented.')
   }
 
+  // Thêm hàm xử lý cập nhật quyền riêng tư
+const handleUpdatePrivacy = async (postId: number, privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS') => {
+  try {
+    const response = await feedApi.updatePrivacy(postId, { privacy });
+    const updatedPost = response.data.data;
+    
+    // Cập nhật state với bài viết đã cập nhật quyền riêng tư
+    setPosts(posts => posts.map(post => 
+      post.postId === updatedPost.postId ? updatedPost : post
+    ));
+    
+    toast.success('Post audience updated successfully!');
+  } catch (error) {
+    console.error('Failed to update post audience:', error);
+    toast.error('Failed to update post audience.');
+  }
+};
+
   return (
     <div className='my-posts-container'>
       <div className='container py-4'>
@@ -312,7 +330,7 @@ export default function MyPost() {
                         userId: profile.userId,
                         username: profile.username,
                         displayName: profile.displayName,
-                        avatar: profile.avatar || '' // Provide empty string as fallback
+                        avatar: profile.avatar || ''
                       }
                     : null
                 }
@@ -320,12 +338,14 @@ export default function MyPost() {
                 onLike={(postId) => handleLikePost(postId)}
                 onEdit={(post) => handleEditButtonClick(post)}
                 onDelete={(postId) => handleDeletePost(postId)}
+                 onUpdatePrivacy={handleUpdatePrivacy}
                 // Chỉ hiển thị Edit và Delete cho MyPost
                 dropdownActions={{
                   edit: true,
                   delete: true,
                   save: false,
-                  report: false
+                  report: false,
+                  editAudience: true
                 }}
                 showComments={showComments}
                 toggleComments={(postId) => toggleComments(postId)}

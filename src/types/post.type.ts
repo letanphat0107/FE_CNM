@@ -44,3 +44,11 @@ export type PagingPost = {
   pageSize: number
   posts: Post[]
 }
+
+// For list shared posts
+export type PostShare = {
+  shareId: number;
+  sharedBy: User;
+  sharedAt: string; // ISO datetime string
+};
+

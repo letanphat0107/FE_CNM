@@ -98,3 +98,20 @@
 .form-control:focus {
   box-shadow: none;
 }
+
+/* Thêm vào file PostItem.css */
+.audience-option {
+  transition: all 0.2s ease;
+}
+
+.audience-option:hover {
+  background-color: #f8f9fa;
+}
+
+.audience-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

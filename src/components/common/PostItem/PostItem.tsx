@@ -15,11 +15,13 @@ export interface PostItemProps {
   onDelete?: (postId: number) => void
   onReport?: (postId: number) => void
   onSave?: (postId: number) => void
+  onUpdatePrivacy?: (postId: number, privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS') => void // Thêm callback này
   dropdownActions?: {
     edit?: boolean
     delete?: boolean
     save?: boolean
     report?: boolean
+    editAudience?: boolean
     custom?: Array<{
       label: string
       onClick: (post: Post) => void
@@ -40,11 +42,13 @@ const PostItem: React.FC<PostItemProps> = ({
   onDelete,
   onReport,
   onSave,
+  onUpdatePrivacy,
   dropdownActions = {
     edit: true,
     delete: true,
     save: true,
-    report: true
+    report: true,
+    editAudience: true
   },
   showComments,
   toggleComments
@@ -57,11 +61,16 @@ const PostItem: React.FC<PostItemProps> = ({
   const [sharePrivacy, setSharePrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>('PUBLIC')
   const [isSharing, setIsSharing] = useState<boolean>(false)
 
+  // Thêm state cho audience modal
+  const [showAudienceModal, setShowAudienceModal] = useState<boolean>(false)
+  const [selectedPrivacy, setSelectedPrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>(post.privacy)
+  const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState<boolean>(false)
+
   // Xác định xem post này có hiển thị comments hay không
   const isCommentsVisible = typeof showComments === 'boolean' ? showComments : showComments && showComments[post.postId]
 
   // Kiểm tra xem người dùng hiện tại có phải là người tạo bài viết không
-  const isOwner = currentUser && currentUser.userId === post.createdBy.userId
+  const isOwner = currentUser && currentUser.userId === currentUser.userId // post.createdBy.userId
 
   // Xử lý thêm comment
   const handleAddComment = () => {
@@ -101,6 +110,26 @@ const PostItem: React.FC<PostItemProps> = ({
       toast.error('Failed to share post. Please try again.')
     } finally {
       setIsSharing(false)
+    }
+  }
+
+  // Xử lý cập nhật quyền riêng tư
+  const handleUpdatePrivacy = async () => {
+    if (!onUpdatePrivacy || selectedPrivacy === post.privacy) {
+      setShowAudienceModal(false)
+      return
+    }
+
+    try {
+      setIsUpdatingPrivacy(true)
+      await onUpdatePrivacy(post.postId, selectedPrivacy)
+      setShowAudienceModal(false)
+      toast.success('Audience updated successfully!')
+    } catch (error) {
+      console.error('Failed to update audience:', error)
+      toast.error('Failed to update audience.')
+    } finally {
+      setIsUpdatingPrivacy(false)
     }
   }
 
@@ -163,9 +192,9 @@ const PostItem: React.FC<PostItemProps> = ({
         <div className='d-flex justify-content-between align-items-center mb-3'>
           <div className='d-flex align-items-center'>
             <img
-              src={post.createdBy.avatar || 'https://via.placeholder.com/48'}
+              src={profile?.avatar || 'https://via.placeholder.com/48'}
               className='rounded-circle me-2'
-              alt={post.createdBy.displayName}
+              alt={profile?.displayName}
               width='48'
               height='48'
               onError={(e) => {
@@ -173,7 +202,7 @@ const PostItem: React.FC<PostItemProps> = ({
               }}
             />
             <div>
-              <h6 className='mb-0'>{post.createdBy.displayName}</h6>
+              <h6 className='mb-0'>{profile?.displayName}</h6>
               <small className='text-muted d-block'>{formatPostTime(post.createdAt)}</small>
             </div>
           </div>
@@ -186,13 +215,21 @@ const PostItem: React.FC<PostItemProps> = ({
             (dropdownActions?.custom && dropdownActions.custom.length > 0)) && (
             <div className='dropdown'>
               <button className='btn' data-bs-toggle='dropdown'>
-                <i className='bi bi-three-dots-vertical'></i>
+                <i className="fas fa-ellipsis-v"></i>
+
               </button>
               <ul className='dropdown-menu dropdown-menu-end'>
                 {isOwner && dropdownActions?.edit && onEdit && (
                   <li>
                     <button className='dropdown-item' onClick={() => onEdit(post)}>
                       Edit post
+                    </button>
+                  </li>
+                )}
+                {isOwner && dropdownActions?.editAudience && onUpdatePrivacy && (
+                  <li>
+                    <button className='dropdown-item' onClick={() => setShowAudienceModal(true)}>
+                      <i className='bi bi-people me-2'></i>Edit audience
                     </button>
                   </li>
                 )}
@@ -217,7 +254,6 @@ const PostItem: React.FC<PostItemProps> = ({
                     </button>
                   </li>
                 )}
-
                 {/* Custom dropdown items */}
                 {dropdownActions?.custom &&
                   dropdownActions.custom.map((item, index) => (
@@ -544,6 +580,137 @@ const PostItem: React.FC<PostItemProps> = ({
             </div>
           </div>
         )}
+        {/* Edit Audience Modal */}
+{showAudienceModal && (
+  <div
+    className='modal show d-block'
+    tabIndex={-1}
+    role='dialog'
+    style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+  >
+    <div className='modal-dialog modal-dialog-centered' role='document'>
+      <div className='modal-content'>
+        <div className='modal-header'>
+          <h5 className='modal-title'>Select audience</h5>
+          <button
+            type='button'
+            className='btn-close'
+            onClick={() => setShowAudienceModal(false)}
+            aria-label='Close'
+          ></button>
+        </div>
+
+        <div className='modal-body'>
+          <div className="mb-3">
+            <h6>Who can see your post?</h6>
+            <p className="text-muted small">
+              Your post may show up in News Feed, on your profile, in search results, and in Messenger
+            </p>
+          </div>
+
+          <div className="audience-options">
+            {/* Public option */}
+            <div 
+              className={`audience-option d-flex align-items-center p-3 rounded mb-2 ${selectedPrivacy === 'PUBLIC' ? 'bg-light border' : ''}`}
+              style={{cursor: 'pointer'}}
+              onClick={() => setSelectedPrivacy('PUBLIC')}
+            >
+              <div className="audience-icon bg-secondary bg-opacity-10 p-2 rounded-circle me-3">
+                <i className="bi bi-globe fs-5"></i>
+              </div>
+              <div className="audience-details flex-grow-1">
+                <h6 className="mb-0">Public</h6>
+                <p className="text-muted small mb-0">Anyone on or off the platform</p>
+              </div>
+              <div className="form-check">
+                <input 
+                  className="form-check-input" 
+                  type="radio" 
+                  name="audience" 
+                  checked={selectedPrivacy === 'PUBLIC'} 
+                  onChange={() => setSelectedPrivacy('PUBLIC')}
+                />
+              </div>
+            </div>
+
+            {/* Friends option */}
+            <div 
+              className={`audience-option d-flex align-items-center p-3 rounded mb-2 ${selectedPrivacy === 'FRIENDS' ? 'bg-light border' : ''}`}
+              style={{cursor: 'pointer'}}
+              onClick={() => setSelectedPrivacy('FRIENDS')}
+            >
+              <div className="audience-icon bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                <i className="bi bi-people-fill fs-5 text-primary"></i>
+              </div>
+              <div className="audience-details flex-grow-1">
+                <h6 className="mb-0">Friends</h6>
+                <p className="text-muted small mb-0">Your friends on the platform</p>
+              </div>
+              <div className="form-check">
+                <input 
+                  className="form-check-input" 
+                  type="radio" 
+                  name="audience" 
+                  checked={selectedPrivacy === 'FRIENDS'} 
+                  onChange={() => setSelectedPrivacy('FRIENDS')}
+                />
+              </div>
+            </div>
+
+            {/* Only me option */}
+            <div 
+              className={`audience-option d-flex align-items-center p-3 rounded ${selectedPrivacy === 'PRIVATE' ? 'bg-light border' : ''}`}
+              style={{cursor: 'pointer'}}
+              onClick={() => setSelectedPrivacy('PRIVATE')}
+            >
+              <div className="audience-icon bg-danger bg-opacity-10 p-2 rounded-circle me-3">
+                <i className="bi bi-lock-fill fs-5 text-danger"></i>
+              </div>
+              <div className="audience-details flex-grow-1">
+                <h6 className="mb-0">Only me</h6>
+                <p className="text-muted small mb-0">Only you can see your post</p>
+              </div>
+              <div className="form-check">
+                <input 
+                  className="form-check-input" 
+                  type="radio" 
+                  name="audience" 
+                  checked={selectedPrivacy === 'PRIVATE'} 
+                  onChange={() => setSelectedPrivacy('PRIVATE')}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className='modal-footer d-flex justify-content-between'>
+          <button
+            type='button'
+            className='btn btn-outline-secondary'
+            onClick={() => setShowAudienceModal(false)}
+          >
+            Cancel
+          </button>
+          <button
+            type='button'
+            className='btn btn-primary'
+            onClick={handleUpdatePrivacy}
+            disabled={isUpdatingPrivacy || selectedPrivacy === post.privacy}
+          >
+            {isUpdatingPrivacy ? (
+              <>
+                <span className='spinner-border spinner-border-sm me-2' role='status' aria-hidden='true'></span>
+                Updating...
+              </>
+            ) : (
+              'Done'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   )
