@@ -85,8 +85,12 @@ export default function useRouteElements() {
               path: path.profile.slice(1),
               element: <Profile />,
               children: [
-                { path: 'my-posts', element: <MyPost /> },
-                { path: 'saved-posts', element: <SavedPost /> },
+                {
+                  index: true, // 👉 Mặc định render MyPost tại /profile
+                  element: <Navigate to="my-posts" replace />
+                },
+                { path: path.myPosts, element: <MyPost /> },
+                { path: path.savedPosts, element: <SavedPost /> },
                 {
                   path: 'settings',
                   element: <SettingsLayout />,
@@ -124,8 +128,8 @@ export default function useRouteElements() {
     },
 
     {
-      path:"/video-call",
-       element:<VideoCallWrapper />
+      path: '/video-call',
+      element: <VideoCallWrapper />
     }
   ])
 

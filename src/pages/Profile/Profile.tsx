@@ -8,18 +8,17 @@ export default function Profile() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-useEffect(() => {
-  const scrollContainer = scrollRef.current
-  if (!scrollContainer) return
+  useEffect(() => {
+    const scrollContainer = scrollRef.current
+    if (!scrollContainer) return
 
-  const handleScroll = () => {
-    setIsCollapsed(scrollContainer.scrollTop > 10) // 👈 dùng scrollTop đúng chỗ
-  }
+    const handleScroll = () => {
+      setIsCollapsed(scrollContainer.scrollTop > 10) // 👈 dùng scrollTop đúng chỗ
+    }
 
-  scrollContainer.addEventListener('scroll', handleScroll)
-  return () => scrollContainer.removeEventListener('scroll', handleScroll)
-}, [])
-
+    scrollContainer.addEventListener('scroll', handleScroll)
+    return () => scrollContainer.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleScroll = () => {
     const scrollTop = window.scrollY
@@ -35,25 +34,40 @@ useEffect(() => {
     <div className='container-fluid p-0' style={{ height: '100vh', overflow: 'hidden' }}>
       {/* User Card */}
       <div
-        className='shadow-sm'
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 1000,
-          backgroundColor: 'white'
+          backgroundColor: 'white',
+                 boxShadow: `
+      0 -2px 5px rgba(0, 0, 0, 0.08),   /* Top */
+      0  2px 5px rgba(0, 0, 0, 0.08),   /* Bottom */
+     -2px 0 5px rgba(0, 0, 0, 0.06),    /* Left */
+      2px 0 5px rgba(0, 0, 0, 0.06)     /* Right */
+    `
         }}
       >
-        <div className='container' style={{ padding: '0px' }}>
+        <div
+          className='container'
+          style={{
+            padding: '0px',
+     
+          }}
+        >
           <div
-            className={`card mb-2 shadow-sm rounded-start-top-4 rounded-end-top-4 transition-all ${
-              isCollapsed ? 'p-2' : 'p-4'
-            }`}
+            className={`card  transition-all ${isCollapsed ? 'p-2' : 'p-4'}`}
             style={{
               position: 'sticky',
               top: 0,
               zIndex: 1000,
               backgroundColor: 'white',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              borderTopLeftRadius: '12px',
+              borderTopRightRadius: '12px',
+              borderBottomLeftRadius: '0px',
+              borderBottomRightRadius: '0px',
+
+    
             }}
           >
             <div className='row'>
@@ -72,16 +86,14 @@ useEffect(() => {
                 />
 
                 {isCollapsed ? (
-            <h6 className="fw-bold mb-0">{profile?.displayName || 'Robert Fox'}</h6>
-          ) : (
-            <div>
-              <h4 className="mb-1 fw-bold">{profile?.displayName || 'Robert Fox'}</h4>
-              <div className="text-secondary">@{profile?.username || 'robert'}</div>
-              <div className="text-secondary">{profile?.role || 'Software Engineer'}</div>
-            </div>
-          )}
-
-                
+                  <h6 className='fw-bold mb-0'>{profile?.displayName || 'Robert Fox'}</h6>
+                ) : (
+                  <div>
+                    <h4 className='mb-1 fw-bold'>{profile?.displayName || 'Robert Fox'}</h4>
+                    <div className='text-secondary'>@{profile?.username || 'robert'}</div>
+                    <div className='text-secondary'>{profile?.role || 'Software Engineer'}</div>
+                  </div>
+                )}
               </div>
 
               {!isCollapsed && (
@@ -91,15 +103,15 @@ useEffect(() => {
                     <div className='col-md-4 d-flex align-items-center justify-content-end'>
                       <div className='d-flex gap-4 text-center'>
                         <div className='px-2'>
-                          <div className='fw-bold fs-4'>12</div>
+                          <div className='fw-bold fs-4'>2</div>
                           <div className='text-secondary'>Posts</div>
                         </div>
                         <div className='px-2'>
-                          <div className='fw-bold fs-4'>207</div>
+                          <div className='fw-bold fs-4'>0</div>
                           <div className='text-secondary'>Followers</div>
                         </div>
                         <div className='px-2'>
-                          <div className='fw-bold fs-4'>64</div>
+                          <div className='fw-bold fs-4'>0</div>
                           <div className='text-secondary'>Following</div>
                         </div>
                       </div>
@@ -111,12 +123,12 @@ useEffect(() => {
           </div>
 
           {/* Nav Tabs - Simplified and cleaner */}
-          <ul className='nav nav-tabs mb-4 border-0'>
+          <ul className='nav pb-2 pt-2 nav-tabs border-top border-0' style={{ backgroundColor: 'white' }}>
             <li className='nav-item'>
               <NavLink
                 to='my-posts'
                 className={({ isActive }) =>
-                  `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
+                  `nav-link px-4 ${isActive ? 'fw-bold text-dark border-0' : 'text-secondary'}`
                 }
               >
                 My Posts
@@ -126,7 +138,7 @@ useEffect(() => {
               <NavLink
                 to='saved-posts'
                 className={({ isActive }) =>
-                  `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
+                  `nav-link px-4 ${isActive ? 'fw-bold text-dark border-0' : 'text-secondary'}`
                 }
               >
                 Saved Posts
@@ -136,7 +148,7 @@ useEffect(() => {
               <NavLink
                 to='settings'
                 className={({ isActive }) =>
-                  `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
+                  `nav-link px-4 ${isActive ? 'fw-bold text-dark border-0' : 'text-secondary'}`
                 }
               >
                 Settings
@@ -147,14 +159,14 @@ useEffect(() => {
       </div>
 
       <div
-  ref={scrollRef}
-  style={{
-    height: 'calc(100vh - 300px)', // hoặc dynamic nếu cần
-    overflowY: 'auto'
-  }}
->
-  <Outlet />
-</div>
+        ref={scrollRef}
+        style={{
+          height: 'calc(100vh - 300px)', // hoặc dynamic nếu cần
+          overflowY: 'auto'
+        }}
+      >
+        <Outlet />
+      </div>
 
       {/* Nội dung động */}
     </div>
