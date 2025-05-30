@@ -172,7 +172,7 @@ export default function GeneralSetting() {
         return ''
       }
     }
-    
+    formData.dob = formatDateForApi(dateString) // Cập nhật lại giá trị nếu không phải định dạng hỗ trợ
     return dateString // Trả về nguyên giá trị nếu không phải định dạng hỗ trợ
   }
   
