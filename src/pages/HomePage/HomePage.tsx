@@ -290,7 +290,7 @@ export default function HomePage() {
           <div
             className='col-md-8 main-content-column'
             style={{
-              maxHeight: 'calc(100vh - 80px)', // Chiều cao tối đa (trừ đi header)
+              maxHeight: 'calc(100vh - 120px)', // Chiều cao tối đa (trừ đi header)
               overflowY: 'auto', // Cho phép cuộn dọc
               scrollbarWidth: 'none', // Ẩn thanh cuộn trên Firefox
               scrollBehavior: 'smooth',
