@@ -86,7 +86,6 @@ const PostItem: React.FC<PostItemProps> = ({
   // If post.createdBy is not available, use createdBy prop
   if (createdBy) {
     post = { ...post, createdBy };
-    console.log(post.createdBy)
   }
   const isOwner = currentUser && post.createdBy && currentUser.userId === post.createdBy.userId
 
