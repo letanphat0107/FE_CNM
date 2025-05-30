@@ -85,7 +85,7 @@ const PostItem: React.FC<PostItemProps> = ({
   // Kiểm tra xem người dùng hiện tại có phải là người tạo bài viết không
   // If post.createdBy is not available, use createdBy prop
   if (createdBy) {
-    post = { ...post, createdBy };
+    post = { ...post, createdBy }
   }
   const isOwner = currentUser && post.createdBy && currentUser.userId === post.createdBy.userId
 
@@ -415,6 +415,14 @@ const PostItem: React.FC<PostItemProps> = ({
                   <i className='fas fa-ellipsis-v'></i>
                 </button>
                 <ul className='dropdown-menu dropdown-menu-end'>
+                  {dropdownActions?.save && onSave && (
+                    <li>
+                      <button className='dropdown-item' onClick={handleToggleSave} disabled={isSaving}>
+                        <i className={`me-2 ${isSaved ? 'fas' : 'far'} fa-bookmark`}></i>
+                        {isSaving ? 'Processing...' : isSaved ? 'Unsave post' : 'Save post'}
+                      </button>
+                    </li>
+                  )}
                   {isOwner && dropdownActions?.edit && onEdit && (
                     <li>
                       <button className='dropdown-item' onClick={() => onEdit(post)}>
@@ -432,18 +440,11 @@ const PostItem: React.FC<PostItemProps> = ({
                   {isOwner && dropdownActions?.delete && onDelete && (
                     <li>
                       <button className='dropdown-item text-danger' onClick={() => onDelete(post.postId)}>
-                        <i className='fas fa-trash-alt me-2 text-danger'></i> Delete
+                        <i className='fas fa-trash-alt me-2 text-danger'></i> Move to trash
                       </button>
                     </li>
                   )}
-                  {dropdownActions?.save && onSave && (
-                    <li>
-                      <button className='dropdown-item' onClick={handleToggleSave} disabled={isSaving}>
-                        <i className={`me-2 ${isSaved ? 'fas' : 'far'} fa-bookmark`}></i>
-                        {isSaving ? 'Processing...' : isSaved ? 'Unsave post' : 'Save post'}
-                      </button>
-                    </li>
-                  )}
+
                   {dropdownActions?.report && onReport && (
                     <li>
                       <button className='dropdown-item' onClick={() => onReport(post.postId)}>
