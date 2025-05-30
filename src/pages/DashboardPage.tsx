@@ -114,19 +114,11 @@ export default function DashboardPage() {
                   position: 'top-right'
                 }
               )
+              refreshConversations()
+              refreshListFriend()
             } else if (type === 'GROUP') {
               refreshConversations()
             }
-          }
-        }
-
-        // Xử lý payload theo nhu cầu cụ thể
-        if (payload.notification) {
-          const { title } = payload.notification
-          if (title === 'Chấp nhận lời mời kết bạn') {
-            refreshConversations()
-          } else if (title === 'Lời mời kết bạn') {
-            refreshListFriend()
           }
         }
       })
@@ -142,7 +134,7 @@ export default function DashboardPage() {
           className='flex-grow-1 ms-5 me-0'
           style={{
             height: 'calc(100vh - 120px)',
-            marginRight: '48px',
+            marginRight: '48px'
           }}
         >
           <Outlet />

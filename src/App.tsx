@@ -115,15 +115,12 @@ function App() {
           localStorage.setItem('lastFCMUserId', userId)
           setIsRegistered(true)
           
-          // Show toast notification
-          toast.success('Thông báo đẩy đã được kích hoạt')
         } else {
           console.log('Token already registered for this user')
           setIsRegistered(true)
         }
       } catch (error) {
         console.error('Error registering device for notifications:', error)
-        toast.error('Không thể đăng ký thông báo')
       }
     }
 
