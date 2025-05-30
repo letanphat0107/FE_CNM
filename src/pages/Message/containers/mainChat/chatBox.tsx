@@ -20,7 +20,7 @@ interface Props {
 }
 
 const ChatBox = ({ currentUserId }: Props) => {
-  const {profile} = useContext(AppContext)  
+  const { profile } = useContext(AppContext)
   const { refreshConversations, selectedConversation, setSelectedConversation } = useContext(AppContext)
   const [newMessage, setNewMessage] = useState('')
   const [participants, setParticipants] = useState<Participant[]>([])
@@ -590,8 +590,8 @@ const ChatBox = ({ currentUserId }: Props) => {
   const initVideoCall = () => {
     if (!selectedConversation || !currentUserId) return
 
-    // Tạo ID phòng từ conversationId
-    const channelId = `ola_${selectedConversation.id.replace(/-/g, '')}`
+    // Tạo ID phòng từ conversationId (thêm tiền tố để tránh xung đột)
+    const channelId = selectedConversation.id
 
     // Lấy thông tin người nhận cuộc gọi
     let partnerInfo = {
@@ -618,8 +618,50 @@ const ChatBox = ({ currentUserId }: Props) => {
       }
     }
 
+    // Đảm bảo userId chỉ chứa ký tự hợp lệ
+    const sanitizedUserId = currentUserId.replace(/[^a-zA-Z0-9]/g, '')
+
     // Mở tab mới với đường dẫn đến trang video call
-    const url = `/video-call?channelName=${encodeURIComponent(channelId)}&userId=${profile?.userId}&displayName=${profile?.displayName}&partnerAvatar=${encodeURIComponent(partnerInfo.avatar)}&partnerName=${encodeURIComponent(partnerInfo.name)}`
+    const url = `/video-call?channelName=${encodeURIComponent(channelId)}&userId=${encodeURIComponent(sanitizedUserId)}&displayName=${profile?.displayName}&partnerAvatar=${encodeURIComponent(partnerInfo.avatar)}&partnerName=${encodeURIComponent(partnerInfo.name)}&callType=video`
+    window.open(url, '_blank')
+  }
+
+  const initVoiceCall = () => {
+    if (!selectedConversation || !currentUserId) return
+
+    // Tạo ID phòng từ conversationId với tiền tố khác để phân biệt với video call
+    const channelId = selectedConversation.id
+
+    // Lấy thông tin người nhận cuộc gọi
+    let partnerInfo = {
+      id: '',
+      name: '',
+      avatar: 'https://randomuser.me/api/portraits/men/1.jpg' // Avatar mặc định
+    }
+
+    if (selectedConversation.type === 'PRIVATE') {
+      const partner = participants.find((p) => p.userId !== currentUserId)
+      if (partner) {
+        partnerInfo = {
+          id: partner.userId,
+          name: partner.displayName || 'Người dùng',
+          avatar: partner.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
+        }
+      }
+    } else {
+      // Nếu là nhóm, sử dụng tên nhóm
+      partnerInfo = {
+        id: selectedConversation.id,
+        name: selectedConversation.name || 'Nhóm',
+        avatar: selectedConversation.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
+      }
+    }
+
+    // Đảm bảo userId chỉ chứa ký tự hợp lệ
+    const sanitizedUserId = currentUserId.replace(/[^a-zA-Z0-9]/g, '')
+
+    // Mở tab mới với đường dẫn đến trang voice call
+    const url = `/video-call?channelName=${channelId}&userId=${encodeURIComponent(sanitizedUserId)}&displayName=${profile?.displayName}&partnerAvatar=${encodeURIComponent(partnerInfo.avatar)}&partnerName=${encodeURIComponent(partnerInfo.name)}&callType=voice`
     window.open(url, '_blank')
   }
 
@@ -648,6 +690,10 @@ const ChatBox = ({ currentUserId }: Props) => {
             </div>
 
             <div className='d-flex align-items-center'>
+              {/* Nút gọi thường */}
+              <button className='btn btn-light btn-sm me-2' onClick={initVoiceCall} title='Bắt đầu cuộc gọi thoại'>
+                <i className='fas fa-phone'></i>
+              </button>
               {/* Thêm nút gọi video call */}
               <button className='btn btn-light btn-sm me-2' onClick={initVideoCall} title='Bắt đầu cuộc gọi video'>
                 <i className='fas fa-video'></i>
