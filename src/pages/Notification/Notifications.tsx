@@ -247,7 +247,6 @@ const Notifications = () => {
     >
       <div className='d-flex justify-content-between align-items-center mb-3'>
         <h2 className='fs-3 fw-bold mb-0'>Thông báo mới</h2>
-        <button className='btn text-primary border-0'>Xem tất cả</button>
       </div>
 
       {notifications.length === 0 && !loading ? (
