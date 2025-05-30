@@ -1,4 +1,4 @@
-import { useContext, useState, useRef } from 'react'
+import { useContext, useState, useRef, useEffect } from 'react' // Thêm useEffect
 import './HomePageCS.css'
 import { AppContext } from 'src/contexts/app.context'
 import { Attachment, Post, User, Comment } from 'src/types/post.type'
@@ -20,46 +20,46 @@ export default function HomePage() {
   const [isCreatingPost, setIsCreatingPost] = useState<boolean>(false)
   const [showShareModal, setShowShareModal] = useState<boolean>(false)
   const [postToShare, setPostToShare] = useState<Post | null>(null)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Dữ liệu mẫu phù hợp với interface mới
+  // Mock user để sử dụng khi cần
   const mockUser: User = {
-    userId: 'user1',
-    username: 'robert.fox',
+    userId: profile?.userId || 'user1',
+    username: profile?.username || 'robert.fox',
     displayName: profile?.displayName || 'Robert Fox',
     avatar:
       profile?.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
   }
 
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      postId: 1,
-      createdBy: mockUser,
-      content:
-        "In today's fast-paced, digitally driven world, digital marketing is not just a strategy, it's a necessity for businesses of all sizes. ✍️",
-      attachments: [],
-      privacy: 'PUBLIC',
-      createdAt: new Date().toISOString(),
-      updatedAt: null,
-      likedUsers: [],
-      comments: [
-        {
-          commentId: 201,
-          content: "Absolutely agree! Digital presence is everything in today's market.",
-          createdAt: new Date().toISOString(),
-          updatedAt: null,
-          commentedBy: {
-            userId: 'user2',
-            username: 'jane.doe',
-            displayName: 'Jane Doe',
-            avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
-          },
-          replies: []
+  // Lấy dữ liệu từ API khi component mount
+  useEffect(() => {
+    const fetchHomeFeed = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const response = await feedApi.getHomeFeed()
+
+        if (response && response.data && response.data.data) {
+          console.log('Fetched posts:', response.data.data)
+          setPosts(response.data.data)
+        } else {
+          console.error('Invalid response format:', response)
+          setError('Invalid response format from server')
         }
-      ],
-      originalPostId: null,
-      originalPost: null
+      } catch (error) {
+        console.error('Failed to fetch home feed:', error)
+        setError('Failed to load posts. Please try again later.')
+        toast.error('Failed to load posts. Please try again.')
+      } finally {
+        setIsLoading(false)
+      }
     }
-  ])
+
+    fetchHomeFeed()
+  }, [])
 
   // Suggested friends phù hợp với interface User mới
   const suggestedFriends: User[] = [
@@ -104,7 +104,7 @@ export default function HomePage() {
     setUploadedFiles(newFiles)
   }
 
-  // Xử lý tạo bài viết mới - đã cập nhật theo cấu trúc mới
+  // Xử lý tạo bài viết mới
   const handleCreatePost = async () => {
     try {
       if (!postContent.trim() && uploadedFiles.length === 0) return
@@ -128,43 +128,51 @@ export default function HomePage() {
       toast.success('Post created successfully!')
     } catch (error) {
       console.error('Failed to create post:', error)
-
       toast.error('Failed to create post. Please try again.')
     } finally {
       setIsCreatingPost(false)
     }
   }
 
-  // Xử lý thêm comment - đã cập nhật theo cấu trúc mới
-  const handleAddComment = (postId: number, content: string) => {
+  // Xử lý thêm comment
+  const handleAddComment = async (postId: number, content: string) => {
     if (!content.trim()) return
 
-    const updatedPosts = posts.map((post) => {
-      if (post.postId === postId) {
-        const newComment: Comment = {
-          commentId: Date.now(),
-          content: content,
-          createdAt: new Date().toISOString(),
-          updatedAt: null,
-          commentedBy: {
-            userId: profile?.userId || 'current-user',
-            username: profile?.username || 'current.user',
-            displayName: profile?.displayName || 'You',
-            avatar: profile?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
-          },
-          replies: []
-        }
+    try {
+      // Đây là nơi bạn sẽ gọi API để thêm comment
+      // Ví dụ: const response = await commentApi.addComment(postId, content);
 
-        return {
-          ...post,
-          comments: [...post.comments, newComment]
-        }
-      }
-      return post
-    })
+      // Cập nhật UI tạm thời
+      const updatedPosts = posts.map((post) => {
+        if (post.postId === postId) {
+          const newComment: Comment = {
+            commentId: Date.now(),
+            content: content,
+            createdAt: new Date().toISOString(),
+            updatedAt: null,
+            commentedBy: {
+              userId: profile?.userId || 'current-user',
+              username: profile?.username || 'current.user',
+              displayName: profile?.displayName || 'You',
+              avatar: profile?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
+            },
+            replies: []
+          }
 
-    setPosts(updatedPosts)
-    setNewComment('')
+          return {
+            ...post,
+            comments: [...post.comments, newComment]
+          }
+        }
+        return post
+      })
+
+      setPosts(updatedPosts)
+      setNewComment('')
+    } catch (error) {
+      console.error('Failed to add comment:', error)
+      toast.error('Failed to add comment. Please try again.')
+    }
   }
 
   // Styles for image grid based on number of images
@@ -219,8 +227,59 @@ export default function HomePage() {
     return postDate.toLocaleDateString()
   }
 
-  function handleLikePost(postId: number): void {
-    throw new Error('Function not implemented.')
+  // Xử lý like post
+  const handleLikePost = async (postId: number) => {
+    try {
+      // Cập nhật UI ngay lập tức (optimistic update)
+      const updatedPosts = posts.map((post) => {
+        if (post.postId === postId) {
+          const isAlreadyLiked = post.likedUsers.some((user) => user.userId === profile?.userId)
+
+          if (isAlreadyLiked) {
+            // Unlike post
+            return {
+              ...post,
+              likedUsers: post.likedUsers.filter((user) => user.userId !== profile?.userId)
+            }
+          } else {
+            // Like post
+            return {
+              ...post,
+              likedUsers: [
+                ...(post.likedUsers || []),
+                {
+                  userId: profile?.userId || 'current-user',
+                  username: profile?.username || 'current.user',
+                  displayName: profile?.displayName || 'You',
+                  avatar: profile?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
+                }
+              ]
+            }
+          }
+        }
+        return post
+      })
+
+      setPosts(updatedPosts)
+
+      // Gọi API thực tế
+      const isAlreadyLiked = posts
+        .find((p) => p.postId === postId)
+        ?.likedUsers.some((u) => u.userId === profile?.userId)
+
+      if (isAlreadyLiked) {
+        await feedApi.unlikeFeed(postId)
+      } else {
+        await feedApi.likeFeed(postId)
+      }
+    } catch (error) {
+      console.error('Failed to like/unlike post:', error)
+      toast.error('Failed to update like status. Please try again.')
+
+      // Revert optimistic update if API call fails
+      const originalPosts = await feedApi.getHomeFeed()
+      setPosts(originalPosts.data.data)
+    }
   }
 
   function handleEditButtonClick(post: Post): void {
@@ -245,10 +304,23 @@ export default function HomePage() {
     // to determine if you're updating an existing post or creating a new one
   }
 
-  function handleDeletePost(postId: number): void {
-    // Implement post deletion logic here
-    setPosts(posts.filter((post) => post.postId !== postId))
-    toast.success('Post deleted successfully!')
+  const handleDeletePost = async (postId: number) => {
+    try {
+      // Optimistic update
+      const originalPosts = [...posts]
+      setPosts(posts.filter((post) => post.postId !== postId))
+
+      // Call API
+      await feedApi.deleteFeed(postId)
+      toast.success('Post deleted successfully!')
+    } catch (error) {
+      console.error('Failed to delete post:', error)
+      toast.error('Failed to delete post. Please try again.')
+
+      // Revert optimistic update
+      const response = await feedApi.getHomeFeed()
+      setPosts(response.data.data)
+    }
   }
 
   function handleSavePost(postId: number): void {
@@ -267,16 +339,19 @@ export default function HomePage() {
 
   // Định nghĩa hàm xử lý share post
   const handleSharePost = async (post: Post) => {
-    // // Hiển thị modal share hoặc xử lý share post
-    // setPostToShare(post)
-    // setShowShareModal(true)
-    try{
+    try {
+      // Gọi API share post
       await feedApi.shareFeed(post.postId, {
         content: post.content,
         privacy: post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS'
       })
+
+      // Refresh posts sau khi share thành công
+      const response = await feedApi.getHomeFeed()
+      setPosts(response.data.data)
+
       toast.success('Post shared successfully!')
-    }catch (error) {
+    } catch (error) {
       console.error('Failed to share post:', error)
       toast.error('Failed to share post. Please try again.')
     }
@@ -290,11 +365,11 @@ export default function HomePage() {
           <div
             className='col-md-8 main-content-column'
             style={{
-              maxHeight: 'calc(100vh - 120px)', // Chiều cao tối đa (trừ đi header)
-              overflowY: 'auto', // Cho phép cuộn dọc
-              scrollbarWidth: 'none', // Ẩn thanh cuộn trên Firefox
+              maxHeight: 'calc(100vh - 120px)',
+              overflowY: 'auto',
+              scrollbarWidth: 'none',
               scrollBehavior: 'smooth',
-              msOverflowStyle: 'none' // Ẩn thanh cuộn trên IE/Edge
+              msOverflowStyle: 'none'
             }}
           >
             {/* CSS inline để ẩn thanh cuộn trên Chrome/Safari/các trình duyệt khác */}
@@ -600,35 +675,69 @@ export default function HomePage() {
               </div>
             )}
 
+            {/* Loading state */}
+            {isLoading && (
+              <div className='text-center my-5 p-5'>
+                <div className='spinner-border text-primary' role='status'>
+                  <span className='visually-hidden'>Loading...</span>
+                </div>
+                <p className='mt-3'>Loading posts...</p>
+              </div>
+            )}
+
+            {/* Error state */}
+            {!isLoading && error && (
+              <div className='alert alert-danger' role='alert'>
+                {error}
+                <button className='btn btn-outline-danger ms-3' onClick={() => window.location.reload()}>
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!isLoading && !error && posts.length === 0 && (
+              <div className='text-center my-5 p-5 border rounded bg-light'>
+                <i className='bi bi-newspaper fs-1 text-muted mb-3'></i>
+                <h4>No posts yet</h4>
+                <p className='text-muted'>Be the first to share something with your friends!</p>
+                <button className='btn btn-primary' onClick={() => setShowPostModal(true)}>
+                  Create Post
+                </button>
+              </div>
+            )}
+
             {/* Posts */}
-            {posts.map((post) => (
-              <PostItem
-                key={post.postId}
-                post={post}
-                currentUser={{
-                  userId: profile?.userId || '',
-                  username: profile?.username || '',
-                  displayName: profile?.displayName || '',
-                  avatar: profile?.avatar || ''
-                }}
-                onComment={(postId, content) => handleAddComment(postId, content)}
-                onLike={(postId) => handleLikePost(postId)}
-                onEdit={(post) => handleEditButtonClick(post)}
-                onDelete={(postId) => handleDeletePost(postId)}
-                onSave={(postId) => handleSavePost(postId)}
-                onReport={(postId) => handleReportPost(postId)}
-                onShare={handleSharePost} 
-                dropdownActions={{
-                  edit: true,
-                  delete: true,
-                  save: true,
-                  report: true,
-                  editAudience: false,
-                }}
-                showComments={showComments}
-                toggleComments={toggleComments}
-              />
-            ))}
+            {!isLoading &&
+              !error &&
+              posts.map((post) => (
+                <PostItem
+                  key={post.postId}
+                  post={post}
+                  currentUser={{
+                    userId: profile?.userId || '',
+                    username: profile?.username || '',
+                    displayName: profile?.displayName || '',
+                    avatar: profile?.avatar || ''
+                  }}
+                  onComment={(postId, content) => handleAddComment(postId, content)}
+                  onLike={(postId) => handleLikePost(postId)}
+                  onEdit={(post) => handleEditButtonClick(post)}
+                  onDelete={(postId) => handleDeletePost(postId)}
+                  onSave={(postId) => handleSavePost(postId)}
+                  onReport={(postId) => handleReportPost(postId)}
+                  onShare={handleSharePost}
+                  dropdownActions={{
+                    edit: true,
+                    delete: true,
+                    save: true,
+                    report: true,
+                    editAudience: false
+                  }}
+                  showComments={showComments}
+                  toggleComments={toggleComments}
+                />
+              ))}
           </div>
 
           {/* Right sidebar */}
