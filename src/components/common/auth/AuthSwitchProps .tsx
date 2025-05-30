@@ -17,6 +17,7 @@ const AuthSwitch: React.FC<AuthSwitchProps> = ({ question, buttonText, targetRou
         <button 
           onClick={() => navigate(targetRoute)} 
           className='btn btn-link text-decoration-none p-0 align-baseline'
+          style={{ color: '#4C68D5' }}
         >
           {buttonText}
         </button>

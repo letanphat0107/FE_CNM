@@ -171,9 +171,14 @@ export default function LoginPage() {
               autoComplete='on'
             />
 
-            <div className='text-end mb-5'>
-              <a href='/forgot-password' className='text-decoration-none'>
-                Quên mật khẩu?
+            <div className='text-end mb-1'>
+              <a href='/forgot-password' className='text-decoration-none' style={{ color: '#4C68D5' }}>
+              Quên mật khẩu?
+              </a>
+            </div>
+            <div className='text-end mb-2'>
+              <a href='/loginByQRCode' className='text-decoration-none' style={{ color: '#4C68D5' }}>
+              Đăng nhập bằng QR Code
               </a>
             </div>
 

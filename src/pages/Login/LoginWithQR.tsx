@@ -7,9 +7,10 @@ import { AppContext } from 'src/contexts/app.context'
 import { useNavigate } from 'react-router-dom'
 import { setProfileToLS, setAccessTokenToLS } from 'src/utils/auth'
 import config from 'src/constants/config'
+import { AuthContainer } from 'src/components/layout/AuthContainer'
 
 export default function LoginWithQR() {
-    const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [userInfo, setUserInfo] = useState<any | null>(null)
   const [stompClient, setStompClient] = useState<any | null>(null)
@@ -54,20 +55,19 @@ export default function LoginWithQR() {
         locationHint
       })
 
-
       const data = res.data.data
       setQrUrl(data)
 
-      const urlObj = new URL(data);
-      const sid = urlObj.searchParams.get("sessionId");
+      const urlObj = new URL(data)
+      const sid = urlObj.searchParams.get('sessionId')
       setSessionId(sid)
 
       const expiryInSeconds = data.expiresIn || 120
       setExpiryTime(Date.now() + expiryInSeconds * 1000)
 
       // Log khi thành công
-      console.log("QR code URL:", data)
-      console.log("Session ID:", sid)
+      console.log('QR code URL:', data)
+      console.log('Session ID:', sid)
     } catch (err) {
       console.error('Failed to create QR session', err)
       setQrUrl(null)
@@ -100,24 +100,28 @@ export default function LoginWithQR() {
     const client = Stomp.over(socket)
     client.debug = () => {}
 
-    client.connect({}, () => {
-      client.subscribe(`/user/queue/qr-login/${sessionId}`, (message) => {
-        try {
-          const payload = JSON.parse(message.body)
-          if (payload.type === 'USER_INFO_PREVIEW') setUserInfo(payload.user)
-          else if (payload.type === 'QR_LOGIN_SUCCESS') {
-            const { token, user } = payload
-            setAccessTokenToLS(token)
-            setProfileToLS(user)
-            setIsAuthenticated(true)
-            setProfile(user)
-            navigate('/')
+    client.connect(
+      {},
+      () => {
+        client.subscribe(`/user/queue/qr-login/${sessionId}`, (message) => {
+          try {
+            const payload = JSON.parse(message.body)
+            if (payload.type === 'USER_INFO_PREVIEW') setUserInfo(payload.user)
+            else if (payload.type === 'QR_LOGIN_SUCCESS') {
+              const { token, user } = payload
+              setAccessTokenToLS(token)
+              setProfileToLS(user)
+              setIsAuthenticated(true)
+              setProfile(user)
+              navigate('/')
+            }
+          } catch (error) {
+            console.error('Error processing WebSocket message:', error)
           }
-        } catch (error) {
-          console.error('Error processing WebSocket message:', error)
-        }
-      })
-    }, (error: any) => console.error('WebSocket connection error:', error))
+        })
+      },
+      (error: any) => console.error('WebSocket connection error:', error)
+    )
 
     setStompClient(client)
     return () => {
@@ -127,118 +131,116 @@ export default function LoginWithQR() {
 
   const formatTimeLeft = (seconds: number | null) => {
     if (!seconds) return '00:00'
-    const mins = Math.floor(seconds / 60).toString().padStart(2, '0')
+    const mins = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, '0')
     const secs = (seconds % 60).toString().padStart(2, '0')
     return `${mins}:${secs}`
   }
 
   return (
-    <div className="qr-login-container">
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-md-6 col-lg-5">
-            <div className="card shadow my-5">
-              <div className="card-body p-4 text-center">
-                <h3 className="mb-4">Đăng nhập với QR Code</h3>
-                
-                <div className="qr-code-wrapper position-relative mb-3">
+    <div className='qr-login-container'>
+      <div className='container'>
+        <div className='row justify-content-center'>
+          <div className='col-md-6 col-lg-5'>
+            <div className='card shadow my-5'>
+              <div className='card-body p-4 text-center'>
+                <h3 className='mb-4'>Đăng nhập với QR Code</h3>
+
+                <div className='qr-code-wrapper position-relative mb-3'>
                   {isExpired ? (
-                    <div className="expired-overlay d-flex flex-column align-items-center justify-content-center">
-                      <div className="expired-message">
-                        <i className="bi bi-clock-history fs-1 text-secondary mb-2"></i>
-                        <p className="fs-5 fw-bold text-secondary">Mã QR đã hết hạn</p>
-                        <button 
-                          className="btn btn-primary"
-                          onClick={generateQrCode}
-                        >
-                          <i className="bi bi-arrow-clockwise me-2"></i>
+                    <div className='expired-overlay d-flex flex-column align-items-center justify-content-center'>
+                      <div className='expired-message'>
+                        <i className='bi bi-clock-history fs-1 text-secondary mb-2'></i>
+                        <p className='fs-5 fw-bold text-secondary'>Mã QR đã hết hạn</p>
+                        <button className='btn btn-primary' onClick={generateQrCode}>
+                          <i className='bi bi-arrow-clockwise me-2'></i>
                           Tạo mã QR mới
                         </button>
                       </div>
                     </div>
                   ) : qrUrl ? (
-                    <QRCodeSVG 
-                      value={qrUrl} 
+                    <QRCodeSVG
+                      value={qrUrl}
                       size={256}
-                      level="H"
+                      level='H'
                       includeMargin={true}
                       imageSettings={{
-                        src: "https://i.imgur.com/i9QFbVN.png",
+                        src: 'https://i.imgur.com/i9QFbVN.png',
                         x: undefined,
                         y: undefined,
                         height: 40,
                         width: 40,
-                        excavate: true,
+                        excavate: true
                       }}
                     />
                   ) : (
-                    <div className="qr-loader d-flex justify-content-center align-items-center" style={{ height: 256 }}>
-                      <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Đang tải...</span>
+                    <div className='qr-loader d-flex justify-content-center align-items-center' style={{ height: 256 }}>
+                      <div className='spinner-border text-primary' role='status'>
+                        <span className='visually-hidden'>Đang tải...</span>
                       </div>
                     </div>
                   )}
                 </div>
-                
+
                 {!isExpired && timeLeft !== null && (
-                  <div className="expiry-timer mb-3">
-                    <span className="badge bg-light text-dark">
-                      <i className="bi bi-clock me-1"></i>
+                  <div className='expiry-timer mb-3'>
+                    <span className='badge bg-light text-dark'>
+                      <i className='bi bi-clock me-1'></i>
                       Hết hạn trong {formatTimeLeft(timeLeft)}
                     </span>
                   </div>
                 )}
-                
-                <p className="text-muted mb-4">
+
+                <p className='text-muted mb-4'>
                   Mở ứng dụng Ola Chat trên điện thoại và quét mã QR để đăng nhập tự động.
                 </p>
-                
+
                 {userInfo && (
-                  <div className="user-preview alert alert-info d-flex align-items-center">
-                    <img 
-                      src={userInfo.avatar || "https://via.placeholder.com/64"} 
-                      alt="User Avatar" 
-                      className="rounded-circle me-3"
+                  <div className='user-preview alert alert-info d-flex align-items-center'>
+                    <img
+                      src={userInfo.avatar || 'https://via.placeholder.com/64'}
+                      alt='User Avatar'
+                      className='rounded-circle me-3'
                       style={{ width: 64, height: 64 }}
                     />
-                    <div className="text-start">
-                      <div className="fw-bold">{userInfo.displayName}</div>
-                      <div className="text-muted">@{userInfo.username}</div>
+                    <div className='text-start'>
+                      <div className='fw-bold'>{userInfo.displayName}</div>
+                      <div className='text-muted'>@{userInfo.username}</div>
                       <small>Xác nhận đăng nhập trên thiết bị di động của bạn</small>
                     </div>
                   </div>
                 )}
-                
-                <div className="d-flex justify-content-center">
-                  <button 
-                    className="btn btn-outline-primary mt-3"
-                    onClick={generateQrCode}
-    
-                  >
+
+                <div className='d-flex justify-content-center'>
+                  <button className='btn btn-outline-primary mt-3' onClick={generateQrCode}>
                     {loading ? (
                       <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span className='spinner-border spinner-border-sm me-2' role='status' aria-hidden='true'></span>
                         Đang tạo...
                       </>
                     ) : (
                       <>
-                        <i className="bi bi-arrow-repeat me-2"></i>
+                        <i className='bi bi-arrow-repeat me-2'></i>
                         Tạo mã QR mới
                       </>
                     )}
                   </button>
                 </div>
               </div>
-              <div className="card-footer bg-light text-center py-3">
-                <small className="text-muted">
-                  Hoặc quay lại <a href="/login" className="text-decoration-none">đăng nhập thông thường</a>
+              <div className='card-footer bg-light text-center py-3'>
+                <small className='text-muted'>
+                  Hoặc quay lại{' '}
+                  <a href='/login' className='text-decoration-none'>
+                    đăng nhập thông thường
+                  </a>
                 </small>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       {/* CSS styles for QR code display */}
       <style>{`
         .qr-code-wrapper {
