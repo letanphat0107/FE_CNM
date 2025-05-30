@@ -5,6 +5,7 @@ import { Attachment, Post, User, Comment } from 'src/types/post.type'
 import feedApi from 'src/apis/feed.api'
 import { toast } from 'react-toastify'
 import PostItem from 'src/components/common/PostItem/PostItem'
+import { pipeline } from '@xenova/transformers'
 
 export default function HomePage() {
   const { profile } = useContext(AppContext)
@@ -23,6 +24,24 @@ export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Biến lưu model toàn cục
+  let textClassifier: any = null
+
+  // Hàm load model kiểm duyệt văn bản
+  const loadTextModel = async () => {
+    if (!textClassifier) {
+      textClassifier = await pipeline('text-classification', 'Xenova/toxic-bert', { quantized: true })
+
+    }
+  }
+
+  // Hàm kiểm duyệt văn bản bài đăng
+  const isPostContentSafe = async (text: string): Promise<boolean> => {
+    if (!textClassifier) await loadTextModel()
+    const result = await textClassifier(text)
+    return result.every((r: any) => r.label !== 'toxic' || r.score < 0.7)
+  }
 
   // Mock user để sử dụng khi cần
   const mockUser: User = {
@@ -108,6 +127,12 @@ export default function HomePage() {
   const handleCreatePost = async () => {
     try {
       if (!postContent.trim() && uploadedFiles.length === 0) return
+
+      const safe = await isPostContentSafe(postContent)
+      if (!safe) {
+        toast.error('Bài viết chứa nội dung không phù hợp.')
+        return
+      }
 
       const formData = new FormData()
       formData.append('content', postContent)
@@ -203,7 +228,6 @@ export default function HomePage() {
     }
   }
 
-
   // Xử lý like post
   const handleLikePost = async (postId: number) => {
     try {
@@ -264,9 +288,7 @@ export default function HomePage() {
     setPostPrivacy(post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS')
 
     if (post.attachments && post.attachments.length > 0) {
-
       setIsMediaTabActive(true)
-    
     } else {
       setUploadedFiles([])
     }
@@ -348,7 +370,7 @@ export default function HomePage() {
       // // Gọi API share post
       // await feedApi.shareFeed(post.postId, {
       //   content: content,
-      //   privacy: privacy 
+      //   privacy: privacy
       // })
 
       toast.success('Post shared successfully!')
@@ -359,7 +381,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className='homepage bg-transparent' style={{padding: '0px' }}>
+    <div className='homepage bg-transparent' style={{ padding: '0px' }}>
       <div className='container pb-5'>
         <div className='row'>
           {/* Main sidebar - with hidden scrollbar */}
@@ -408,7 +430,7 @@ export default function HomePage() {
                     onClick={() => setShowPostModal(true)}
                     style={{ cursor: 'pointer' }}
                   >
-                    What's on your mind?
+                    Bạn đang nghĩ gì?
                   </div>
                 </div>
                 <div className='d-flex justify-content-between align-items-center'>

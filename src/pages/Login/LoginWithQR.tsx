@@ -109,6 +109,7 @@ export default function LoginWithQR() {
             if (payload.type === 'USER_INFO_PREVIEW') setUserInfo(payload.user)
             else if (payload.type === 'QR_LOGIN_SUCCESS') {
               const { accessToken, refreshToken, user } = payload
+             console.log("Received message:", payload);
               setAccessTokenToLS(accessToken)
               setRefreshTokenToLS(refreshToken)
               setProfileToLS(user)

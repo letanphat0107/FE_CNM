@@ -5,6 +5,41 @@ import userApi from 'src/apis/user.api'
 import path from 'src/constants/path'
 import { AppContext } from 'src/contexts/app.context'
 import { setProfileToLS } from 'src/utils/auth'
+import * as nsfwjs from 'nsfwjs'
+import * as tf from '@tensorflow/tfjs'
+
+let nsfwModel: nsfwjs.NSFWJS | null = null
+
+// Hàm load model NSFW
+const loadNSFWModel = async () => {
+  if (!nsfwModel) {
+    nsfwModel = await nsfwjs.load()
+  }
+}
+
+// Hàm kiểm duyệt ảnh đại diện
+const isImageSafe = async (file: File): Promise<boolean> => {
+  if (!nsfwModel) await loadNSFWModel()
+
+  const img = new Image()
+  const reader = new FileReader()
+
+  return new Promise((resolve, reject) => {
+    reader.onload = async () => {
+      img.src = reader.result as string
+      img.onload = async () => {
+        const predictions = await nsfwModel!.classify(img)
+        const unsafe = predictions.find(
+          (p) => ['Porn', 'Hentai', 'Sexy'].includes(p.className) && p.probability > 0.7
+        )
+        resolve(!unsafe)
+      }
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 
 export default function GeneralSetting() {
   const { profile, setProfile } = useContext(AppContext)
@@ -41,6 +76,8 @@ export default function GeneralSetting() {
       return response.data
     },
     onSuccess: (data) => {
+        getProfile()
+
       toast.success('Upload ảnh thành công!')
     },
     onError: (error: any) => {
@@ -131,6 +168,13 @@ export default function GeneralSetting() {
         toast.error('Vui lòng chọn tệp hình ảnh')
         return
       }
+
+      // Kiểm duyệt bằng AI client-side
+    const safe =  isImageSafe(file)
+    if (!safe) {
+      toast.error('Ảnh không phù hợp! Vui lòng chọn ảnh khác.')
+      return
+    }
       
       setSelectedFile(file)
       
