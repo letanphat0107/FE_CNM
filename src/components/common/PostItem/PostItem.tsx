@@ -362,17 +362,17 @@ const PostItem: React.FC<PostItemProps> = ({
           <div className='d-flex justify-content-between align-items-center mb-3'>
             <div className='d-flex align-items-center'>
               <img
-                src={profile?.avatar || 'https://via.placeholder.com/48'}
+                src={post.createdBy?.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'}
                 className='rounded-circle me-2'
-                alt={profile?.displayName}
+                alt={post.createdBy?.displayName}
                 width='48'
                 height='48'
                 onError={(e) => {
-                  ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/48'
+                  ;(e.target as HTMLImageElement).src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
                 }}
               />
               <div>
-                <h6 className='mb-0'>{profile?.displayName}</h6>
+                <h6 className='mb-0'>{post.createdBy?.displayName}</h6>
                 <small className='text-muted d-block'>{formatPostTime(post.createdAt)}</small>
               </div>
             </div>
