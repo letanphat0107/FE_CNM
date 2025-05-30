@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react'
 import { AppContext } from 'src/contexts/app.context'
-import { Post } from 'src/types/post.type'
+import { Post, User } from 'src/types/post.type'
 import feedApi from 'src/apis/feed.api'
 import { toast } from 'react-toastify'
 import './MyPost.css'
@@ -25,6 +25,7 @@ export default function MyPost() {
   const [isUpdatingPost, setIsUpdatingPost] = useState<boolean>(false)
   const fileInputEditRef = useRef<HTMLInputElement>(null)
   const [fileInputEditKey, setFileInputEditKey] = useState<number>(0)
+  const [createBy, setCreateBy] = useState<User | null>(null)
 
   // Fetch posts when component mounts
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function MyPost() {
       const response = await feedApi.getMyFeed({ page: 0, size: 10 })
       const data = response.data.data
       setPosts(data.posts)
+      setCreateBy(data.createdBy || '')
       setHasMore(page < data.totalPages - 1)
     } catch (error) {
       console.error('Failed to fetch posts:', error)
@@ -372,6 +374,7 @@ export default function MyPost() {
                           }
                         : null
                     }
+                    createdBy={createBy}
                     onComment={(postId, content) => handleAddComment(postId, content)}
                     onLike={(postId) => handleLikePost(postId)}
                     onEdit={(post) => handleEditButtonClick(post)}

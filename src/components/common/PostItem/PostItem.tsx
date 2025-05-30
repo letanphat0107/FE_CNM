@@ -8,6 +8,7 @@ import './PostItem.css'
 export interface PostItemProps {
   post: Post
   currentUser?: User | null
+  createdBy?: User | null
   onComment?: (postId: number, content: string) => void
   onLike?: (postId: number) => void
   onShare?: (post: Post, content: string, privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS') => void
@@ -35,6 +36,7 @@ export interface PostItemProps {
 const PostItem: React.FC<PostItemProps> = ({
   post,
   currentUser,
+  createdBy,
   onComment,
   onLike,
   onShare,
@@ -81,6 +83,11 @@ const PostItem: React.FC<PostItemProps> = ({
   const isCommentsVisible = typeof showComments === 'boolean' ? showComments : showComments && showComments[post.postId]
 
   // Kiểm tra xem người dùng hiện tại có phải là người tạo bài viết không
+  // If post.createdBy is not available, use createdBy prop
+  if (createdBy) {
+    post = { ...post, createdBy };
+    console.log(post.createdBy)
+  }
   const isOwner = currentUser && post.createdBy && currentUser.userId === post.createdBy.userId
 
   // Thêm state cho hiển thị modal shares, likes, comments
