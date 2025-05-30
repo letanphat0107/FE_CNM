@@ -4,6 +4,20 @@ import { AppContext } from 'src/contexts/app.context'
 import messageAPI from 'src/apis/message.api'
 import { useWebSocket } from 'src/contexts/websocket.context'
 
+// Add the animation as a CSS-in-JS style in the component
+const fadeInMoveAnimation = `
+  @keyframes fadeInMove {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`
+
 interface Props {
   onPress: (conversationId: Conversation) => void
 }
@@ -54,32 +68,31 @@ const Conversations = ({ onPress }: Props) => {
   useEffect(() => {
     if (conversations.length > 0 && profile) {
       // Hủy đăng ký các subscription cũ
-      subscriptionsRef.current.forEach(id => {
+      subscriptionsRef.current.forEach((id) => {
         if (id) unsubscribe(id)
       })
-      
+
       subscriptionsRef.current = []
-      
+
       // Đăng ký subscription mới cho mỗi cuộc trò chuyện
-      conversations.forEach(conversation => {
+      conversations.forEach((conversation) => {
         const subId = subscribe(`/user/${conversation.id}/private`, (message) => {
           handleMessageReceived(conversation.id, message)
         })
-        
+
         if (subId) {
           subscriptionsRef.current.push(subId)
         }
       })
     }
-    
+
     return () => {
       // Hủy đăng ký khi component unmount
-      subscriptionsRef.current.forEach(id => {
+      subscriptionsRef.current.forEach((id) => {
         if (id) unsubscribe(id)
       })
     }
   }, [conversations, profile, subscribe, unsubscribe])
-
 
   // Xử lý khi có tin nhắn mới
   const handleMessageReceived = (conversationId: string, message: any) => {
@@ -156,6 +169,7 @@ const Conversations = ({ onPress }: Props) => {
 
   return (
     <>
+      <style>{fadeInMoveAnimation}</style>
       <div className='chat-list border-end' style={{ width: '100%', maxWidth: '268px' }}>
         <div className='d-flex justify-content-between align-items-center px-4 py-3 border-bottom'>
           <h6 className='mb-0'>Messages</h6>
@@ -169,16 +183,20 @@ const Conversations = ({ onPress }: Props) => {
           </div>
         </div>
 
-        <div className='chat-list-content' style={{ textAlign: 'left', maxHeight: 'calc(100vh - 290px)', overflowY: 'auto' }}>
+        <div
+          className='chat-list-content'
+          style={{ textAlign: 'left', maxHeight: 'calc(100vh - 290px)', overflowY: 'auto' }}
+        >
           {conversations.map((conversation) => (
             <div
               key={conversation.id}
-              className={`chat-item px-3 py-2 border-bottom ${selectedConversation?.id === conversation.id ? 'bg-light' : 'bg-[#F1F4F9]'}`}
-              style={{ 
-              cursor: 'pointer', 
-              position: 'relative',
-              transition: 'all 0.3s ease-in-out',
-              animation: 'fadeInMove 0.5s ease-out'
+              className={`chat-item px-3 py-2 mb-2 rounded shadow-sm border 
+    ${selectedConversation?.id === conversation.id ? 'bg-light ' : 'bg-white border-light'}
+    hover:bg-[#f5f5f5]`}
+              style={{
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                animation: 'fadeInMove 0.4s ease-out'
               }}
               onClick={() => handleConversationSelect(conversation)}
             >
@@ -188,7 +206,8 @@ const Conversations = ({ onPress }: Props) => {
                 <img
                   src={
                     conversation.type === 'GROUP'
-                      ? conversation.avatar || 'https://png.pngtree.com/element_our/png_detail/20181021/group-avatar-icon-design-vector-png_141882.jpg'
+                      ? conversation.avatar ||
+                        'https://png.pngtree.com/element_our/png_detail/20181021/group-avatar-icon-design-vector-png_141882.jpg'
                       : conversation.partner?.avatar ||
                         'https://res.cloudinary.com/dm5ulzy7n/image/upload/v1748307746/z6642578626786_9c3f5e5b519e59140f14558806ec7d00--dfca98f0-c6cb-46ed-b57b-e87de3e712ce.jpg'
                   }
@@ -231,7 +250,10 @@ const Conversations = ({ onPress }: Props) => {
         </div>
 
         <div className='new-message-section border-top px-4 py-3 bg-white' style={{ position: 'sticky', bottom: 0 }}>
-          <div className='d-flex align-items-center text-muted' style={{ fontSize: '14px', cursor: 'pointer' }}>
+          <div
+            className='d-flex align-items-center justify-content-center text-muted'
+            style={{ fontSize: '14px', cursor: 'pointer' }}
+          >
             <i className='far fa-edit me-2'></i>
             New Message
           </div>

@@ -826,14 +826,20 @@ const ChatBox = ({ currentUserId }: Props) => {
 
                 <button
                   type='submit'
-                  className='btn text-white rounded-circle'
-                  style={{ backgroundColor: '#4F46E5', width: '40px', height: '40px' }}
+                  className='btn text-white rounded-circle d-flex justify-content-center align-items-center'
+                  style={{ 
+                  backgroundColor: '#4F46E5', 
+                  width: '40px', 
+                  height: '40px', 
+                  padding: '0', 
+                  minWidth: '40px'
+                  }}
                   disabled={isUploading}
                 >
                   {isUploading ? (
-                    <span className='spinner-border spinner-border-sm' role='status' aria-hidden='true'></span>
+                  <span className='spinner-border spinner-border-sm' role='status' aria-hidden='true'></span>
                   ) : (
-                    <i className='fas fa-paper-plane'></i>
+                  <i className='fas fa-paper-plane'></i>
                   )}
                 </button>
               </div>
