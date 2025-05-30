@@ -179,7 +179,7 @@ export default function LoginPage() {
             <div className='text-end mb-2'>
               <a href='/loginByQRCode' className='text-decoration-none' style={{ color: '#4C68D5' }}>
               Đăng nhập bằng QR Code
-              </a>
+              </a> 
             </div>
 
             <Button type='submit' loading={isLoading} style={{ backgroundColor: '#4C68D5', color: '#fff' }}>
