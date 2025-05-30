@@ -97,6 +97,10 @@ export default function useRouteElements() {
                   path: 'settings',
                   element: <SettingsLayout />,
                   children: [
+                    {
+                      index: true,
+                      element: <Navigate to='general' replace />
+                    },
                     { path: 'general', element: <GeneralSetting /> },
                     { path: 'account', element: <AccountSetting /> },
                     { path: 'logout', element: <LogoutSetting /> },

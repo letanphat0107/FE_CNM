@@ -6,7 +6,6 @@ export default function SettingsLayout() {
       <div className="row">
         {/* Sidebar */}
         <div className="col-md-3 mb-4">
-          <h5 className="fw-bold mb-3 text-start">Settings</h5>
           <div className="list-group shadow-sm rounded">
             <NavLink 
               to="general" 
