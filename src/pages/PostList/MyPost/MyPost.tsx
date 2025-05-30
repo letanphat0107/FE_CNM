@@ -274,108 +274,269 @@ export default function MyPost() {
   }
 
   // Thêm hàm xử lý cập nhật quyền riêng tư
-const handleUpdatePrivacy = async (postId: number, privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS') => {
-  try {
-    const response = await feedApi.updatePrivacy(postId, { privacy });
-    const updatedPost = response.data.data;
-    
-    // Cập nhật state với bài viết đã cập nhật quyền riêng tư
-    setPosts(posts => posts.map(post => 
-      post.postId === updatedPost.postId ? updatedPost : post
-    ));
-    
-    toast.success('Post audience updated successfully!');
-  } catch (error) {
-    console.error('Failed to update post audience:', error);
-    toast.error('Failed to update post audience.');
+  const handleUpdatePrivacy = async (postId: number, privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS') => {
+    try {
+      const response = await feedApi.updatePrivacy(postId, { privacy })
+      const updatedPost = response.data.data
+
+      // Cập nhật state với bài viết đã cập nhật quyền riêng tư
+      setPosts((posts) => posts.map((post) => (post.postId === updatedPost.postId ? updatedPost : post)))
+
+      toast.success('Post audience updated successfully!')
+    } catch (error) {
+      console.error('Failed to update post audience:', error)
+      toast.error('Failed to update post audience.')
+    }
   }
-};
 
   return (
     <div className='my-posts-container'>
       <div className='container py-4'>
-        <h2 className='mb-4 text-center'>My Posts</h2>
-
-        {loading && posts.length === 0 ? (
-          <div className='text-center py-5'>
-            <div className='spinner-border text-primary' role='status'>
-              <span className='visually-hidden'>Loading...</span>
-            </div>
-            <p className='mt-2'>Loading your posts...</p>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className='text-center py-5'>
-            <div className='mb-3'>
-              <i className='bi bi-file-earmark-post fs-1 text-muted'></i>
-            </div>
-            <h5>You haven't created any posts yet</h5>
-            <p className='text-muted'>When you create posts, they will appear here.</p>
-          </div>
-        ) : (
-          <div
-            className='posts-container'
-            style={{
-              maxWidth: '600px',
-              margin: '0 auto'
-            }}
-          >
-            {/* Posts */}
-            {posts.map((post) => (
-              <PostItem
-                key={post.postId}
-                post={post}
-                currentUser={
-                  profile
-                    ? {
-                        userId: profile.userId,
-                        username: profile.username,
-                        displayName: profile.displayName,
-                        avatar: profile.avatar || ''
-                      }
-                    : null
-                }
-                onComment={(postId, content) => handleAddComment(postId, content)}
-                onLike={(postId) => handleLikePost(postId)}
-                onEdit={(post) => handleEditButtonClick(post)}
-                onDelete={(postId) => handleDeletePost(postId)}
-                 onUpdatePrivacy={handleUpdatePrivacy}
-                // Chỉ hiển thị Edit và Delete cho MyPost
-                dropdownActions={{
-                  edit: true,
-                  delete: true,
-                  save: false,
-                  report: false,
-                  editAudience: true
+        <div className='row'>
+          {/* Main content column */}
+          <div className='col-md-8'>
+            {loading && posts.length === 0 ? (
+              <div className='text-center py-5'>
+                <div className='spinner-border text-primary' role='status'>
+                  <span className='visually-hidden'>Loading...</span>
+                </div>
+                <p className='mt-2'>Loading your posts...</p>
+              </div>
+            ) : posts.length === 0 ? (
+              <div className='text-center py-5'>
+                <div className='mb-3'>
+                  <i className='bi bi-file-earmark-post fs-1 text-muted'></i>
+                </div>
+                <h5>You haven't created any posts yet</h5>
+                <p className='text-muted'>When you create posts, they will appear here.</p>
+              </div>
+            ) : (
+              <div
+                className='posts-container'
+                style={{
+                  maxWidth: '100%',
+                  margin: '0 auto'
                 }}
-                showComments={showComments}
-                toggleComments={(postId) => toggleComments(postId)}
-              />
-            ))}
+              >
+                {/* Posts */}
+                {posts.map((post) => (
+                  <PostItem
+                    key={post.postId}
+                    post={post}
+                    currentUser={
+                      profile
+                        ? {
+                            userId: profile.userId,
+                            username: profile.username,
+                            displayName: profile.displayName,
+                            avatar: profile.avatar || ''
+                          }
+                        : null
+                    }
+                    onComment={(postId, content) => handleAddComment(postId, content)}
+                    onLike={(postId) => handleLikePost(postId)}
+                    onEdit={(post) => handleEditButtonClick(post)}
+                    onDelete={(postId) => handleDeletePost(postId)}
+                    onUpdatePrivacy={handleUpdatePrivacy}
+                    // Chỉ hiển thị Edit và Delete cho MyPost
+                    dropdownActions={{
+                      edit: true,
+                      delete: true,
+                      save: false,
+                      report: false,
+                      editAudience: true
+                    }}
+                    showComments={showComments}
+                    toggleComments={(postId) => toggleComments(postId)}
+                  />
+                ))}
 
-            {/* Load more button */}
-            {hasMore && (
-              <div className='text-center mb-4'>
-                <button className='btn btn-outline-primary rounded-pill px-4' onClick={loadMore} disabled={loading}>
-                  {loading ? (
-                    <>
-                      <span className='spinner-border spinner-border-sm me-2' role='status' aria-hidden='true'></span>
-                      Loading...
-                    </>
-                  ) : (
-                    'Load More'
-                  )}
-                </button>
+                {/* Load more button */}
+                {hasMore && (
+                  <div className='text-center mb-4'>
+                    <button className='btn btn-outline-primary rounded-pill px-4' onClick={loadMore} disabled={loading}>
+                      {loading ? (
+                        <>
+                          <span
+                            className='spinner-border spinner-border-sm me-2'
+                            role='status'
+                            aria-hidden='true'
+                          ></span>
+                          Loading...
+                        </>
+                      ) : (
+                        'Load More'
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+
+          {/* Right sidebar */}
+          <div className='col-md-4'>
+            <div className='card'>
+              <div className='card-header bg-white'>
+                <h5 className='mb-0'>Post Statistics</h5>
+              </div>
+              <div className='card-body'>
+                <div className='d-flex justify-content-between mb-3'>
+                  <div className='text-center'>
+                    <h5>{posts.length}</h5>
+                    <div className='text-muted small'>Total Posts</div>
+                  </div>
+                  <div className='text-center'>
+                    <h5>
+                      {posts.reduce((acc, post) => {
+                        return acc + post.likedUsers.length
+                      }, 0)}
+                    </h5>
+                    <div className='text-muted small'>Total Likes</div>
+                  </div>
+                  <div className='text-center'>
+                    <h5>
+                      {posts.reduce((acc, post) => {
+                        return acc + (post.comments ? post.comments.length : 0)
+                      }, 0)}
+                    </h5>
+                    <div className='text-muted small'>Comments</div>
+                  </div>
+                </div>
+                <hr />
+                <div className='mb-3'>
+                  <h6 className='mb-2'>Privacy Distribution</h6>
+                  <div className='progress-stacked mb-2'>
+                    {/* Calculate percentages for each privacy type */}
+                    {(() => {
+                      const publicCount = posts.filter((p) => p.privacy === 'PUBLIC').length
+                      const friendsCount = posts.filter((p) => p.privacy === 'FRIENDS').length
+                      const privateCount = posts.filter((p) => p.privacy === 'PRIVATE').length
+                      const total = posts.length || 1 // Avoid division by zero
+
+                      return (
+                        <>
+                          <div
+                            className='progress-bar bg-success'
+                            role='progressbar'
+                            style={{ width: `${(publicCount / total) * 100}%` }}
+                            aria-valuenow={(publicCount / total) * 100}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            title={`Public: ${publicCount} posts`}
+                          ></div>
+                          <div
+                            className='progress-bar bg-primary'
+                            role='progressbar'
+                            style={{ width: `${(friendsCount / total) * 100}%` }}
+                            aria-valuenow={(friendsCount / total) * 100}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            title={`Friends: ${friendsCount} posts`}
+                          ></div>
+                          <div
+                            className='progress-bar bg-danger'
+                            role='progressbar'
+                            style={{ width: `${(privateCount / total) * 100}%` }}
+                            aria-valuenow={(privateCount / total) * 100}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            title={`Private: ${privateCount} posts`}
+                          ></div>
+                        </>
+                      )
+                    })()}
+                  </div>
+                  <div className='d-flex justify-content-between small'>
+                    <span>
+                      <i className='bi bi-globe me-1 text-success'></i> Public
+                    </span>
+                    <span>
+                      <i className='bi bi-people-fill me-1 text-primary'></i> Friends
+                    </span>
+                    <span>
+                      <i className='bi bi-lock-fill me-1 text-danger'></i> Private
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className='card mt-4'>
+              <div className='card-header bg-white'>
+                <h5 className='mb-0'>Recent Activity</h5>
+              </div>
+              <div className='card-body p-0'>
+                <ul className='list-group list-group-flush'>
+                  {posts.slice(0, 3).map((post, index) => (
+                    <li key={index} className='list-group-item'>
+                      <div className='d-flex'>
+                        <div className='flex-shrink-0'>
+                          <div
+                            className='bg-light rounded-circle p-2 d-flex align-items-center justify-content-center'
+                            style={{ width: '40px', height: '40px' }}
+                          >
+                            <i className='bi bi-pencil'></i>
+                          </div>
+                        </div>
+                        <div className='ms-3'>
+                          <div>You posted {formatPostTime(post.createdAt)}</div>
+                          <small className='text-muted'>
+                            {post.content}
+                          </small>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className='card-footer bg-white text-center'>
+                <button className='btn btn-sm btn-outline-primary rounded-pill'>See All Activity</button>
+              </div>
+            </div>
+
+            <div className='card mt-4'>
+              <div className='card-body text-center text-muted'>
+                <small>© 2025 Ola Chat. All rights reserved.</small>
+                <div className='mt-2'>
+                  <a href='#' className='text-decoration-none text-muted small me-2'>
+                    About
+                  </a>
+                  <a href='#' className='text-decoration-none text-muted small me-2'>
+                    Help
+                  </a>
+                  <a href='#' className='text-decoration-none text-muted small'>
+                    Privacy & Terms
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modal chỉnh sửa bài viết */}
       {showEditModal && editingPost && (
-        <div className='modal show d-block' tabIndex={-1} role='dialog' style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className='modal-dialog' role='document' style={{ maxWidth: '500px', margin: '2rem auto' }}>
-            <div className='modal-content' style={{ maxHeight: '660px' }}>
+        <div
+          className='modal show d-block'
+          tabIndex={-1}
+          role='dialog'
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1050
+          }}
+        >
+          <div
+            className='modal-dialog modal-dialog-centered'
+            role='document'
+            style={{ maxWidth: '500px', margin: '0 auto' }}
+          >
+            <div className='modal-content' style={{ maxHeight: '90vh', overflow: 'hidden' }}>
               <div className='modal-header'>
                 <h5 className='modal-title'>Edit post</h5>
                 <button
