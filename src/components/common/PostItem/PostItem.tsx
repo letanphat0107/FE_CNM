@@ -305,7 +305,6 @@ const PostItem: React.FC<PostItemProps> = ({
       // Gọi callback để cập nhật state ở component cha nếu cần
       onLike(post.postId)
     } catch (error) {
-
     } finally {
       setIsLiking(false)
     }
@@ -336,7 +335,6 @@ const PostItem: React.FC<PostItemProps> = ({
         setLikePage((prev) => prev + 1)
       }
     } catch (error) {
-
     } finally {
       setLoadingLikedUsers(false)
     }
@@ -508,8 +506,7 @@ const PostItem: React.FC<PostItemProps> = ({
                     className='bg-primary rounded-circle p-1 me-1 d-flex align-items-center justify-content-center'
                     style={{ width: '20px', height: '20px' }}
                   >
-                    <i className="fas fa-thumbs-up text-white small"></i>
-
+                    <i className='fas fa-thumbs-up text-white small'></i>
                   </div>
                   <span className='text-muted small'>{post.likedUsers.length}</span>
                 </div>
@@ -555,7 +552,7 @@ const PostItem: React.FC<PostItemProps> = ({
                 className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
                 onClick={() => toggleComments(post.postId)}
               >
-                <i className='bi bi-chat me-2'></i> Comment 
+                <i className='bi bi-chat me-2'></i> Comment
               </button>
             )}
 
@@ -777,10 +774,10 @@ const PostItem: React.FC<PostItemProps> = ({
                   <div className='ms-2'>Share with your audience</div>
                   <div className='d-flex align-items-center'>
                     <button className='btn btn-light rounded-circle me-1'>
-                      <i className='bi bi-people-fill text-primary'></i> {/* bạn bè */}
+                      <i className='fas fa-user-friends text-primary'></i> {/* bạn bè */}
                     </button>
                     <button className='btn btn-light rounded-circle me-1'>
-                      <i className='bi bi-emoji-smile text-warning'></i> {/* emoji */}
+                      <i className='fas fa-smile text-warning'></i> {/* emoji */}
                     </button>
                   </div>
                 </div>
