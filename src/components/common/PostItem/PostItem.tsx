@@ -361,7 +361,6 @@ const PostItem: React.FC<PostItemProps> = ({
 
       // Gọi API thông qua callback
       await onSave(post.postId)
-
     } catch (error) {
       // Nếu có lỗi, hoàn tác trạng thái
       setIsSaved(isSaved)
@@ -413,28 +412,28 @@ const PostItem: React.FC<PostItemProps> = ({
                   {isOwner && dropdownActions?.edit && onEdit && (
                     <li>
                       <button className='dropdown-item' onClick={() => onEdit(post)}>
-                        Edit post
+                        <i className='fas fa-pencil-alt me-2'></i> Edit Post
                       </button>
                     </li>
                   )}
                   {isOwner && dropdownActions?.editAudience && onUpdatePrivacy && (
                     <li>
                       <button className='dropdown-item' onClick={() => setShowAudienceModal(true)}>
-                        <i className='bi bi-people me-2'></i>Edit audience
+                        <i className='fas fa-users me-2'></i> Edit audience
                       </button>
                     </li>
                   )}
                   {isOwner && dropdownActions?.delete && onDelete && (
                     <li>
                       <button className='dropdown-item text-danger' onClick={() => onDelete(post.postId)}>
-                        Delete post
+                        <i className='fas fa-trash-alt me-2 text-danger'></i> Delete
                       </button>
                     </li>
                   )}
                   {dropdownActions?.save && onSave && (
                     <li>
                       <button className='dropdown-item' onClick={handleToggleSave} disabled={isSaving}>
-                        <i className={`bi ${isSaved ? 'bi-bookmark-fill' : 'bi-bookmark'} me-2`}></i>
+                        <i className={`me-2 ${isSaved ? 'fas' : 'far'} fa-bookmark`}></i>
                         {isSaving ? 'Processing...' : isSaved ? 'Unsave post' : 'Save post'}
                       </button>
                     </li>
@@ -442,7 +441,7 @@ const PostItem: React.FC<PostItemProps> = ({
                   {dropdownActions?.report && onReport && (
                     <li>
                       <button className='dropdown-item' onClick={() => onReport(post.postId)}>
-                        Report
+                        <i className='fas fa-flag me-2'></i>Report
                       </button>
                     </li>
                   )}

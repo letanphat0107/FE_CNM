@@ -263,22 +263,16 @@ export default function HomePage() {
     setPostContent(post.content)
     setPostPrivacy(post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS')
 
-    // If post has attachments, prepare the UI for editing them
     if (post.attachments && post.attachments.length > 0) {
-      // In a real implementation, you'd need to convert attachment URLs to File objects
-      // This is a simplified approach that would require additional work
+
       setIsMediaTabActive(true)
-      // In a real implementation, you would download these files or handle them differently
+    
     } else {
       setUploadedFiles([])
     }
 
     // Show the post modal in edit mode
     setShowPostModal(true)
-
-    // You might want to add an "editingPostId" state to track which post is being edited
-    // For a complete implementation, add this state and use it in handleCreatePost
-    // to determine if you're updating an existing post or creating a new one
   }
 
   const handleDeletePost = async (postId: number) => {
