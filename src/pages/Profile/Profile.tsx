@@ -1,97 +1,162 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import userApi from 'src/apis/user.api'
 import { AppContext } from 'src/contexts/app.context'
 
 export default function Profile() {
   const { profile, setProfile } = useContext(AppContext)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+useEffect(() => {
+  const scrollContainer = scrollRef.current
+  if (!scrollContainer) return
+
+  const handleScroll = () => {
+    setIsCollapsed(scrollContainer.scrollTop > 10) // 👈 dùng scrollTop đúng chỗ
+  }
+
+  scrollContainer.addEventListener('scroll', handleScroll)
+  return () => scrollContainer.removeEventListener('scroll', handleScroll)
+}, [])
+
+
+  const handleScroll = () => {
+    const scrollTop = window.scrollY
+    setIsCollapsed(scrollTop > 50) // 👈 chỉnh ngưỡng theo ý muốn
+  }
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
-    <div className='container' style={{ padding: '0px' }}>
+    <div className='container-fluid p-0' style={{ height: '100vh', overflow: 'hidden' }}>
       {/* User Card */}
-      <div className='container' style={{ padding: '0px' }}>
-        <div className='card p-4 mb-2 shadow-sm rounded-start-top-4 rounded-end-top-4'>
-          <div className='row'>
-            {/* Avatar + Info - Left Column */}
-            <div className='col-md-8 d-flex align-items-center'>
-              <img
-                src={
-                  profile?.avatar
-                    ? profile.avatar
-                    : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
-                }
-                alt='avatar'
-                className='rounded-circle me-4'
-                width='100'
-                height='100'
-                style={{ objectFit: 'cover' }}
-              />
-              <div>
-                <h4 className='mb-1 fw-bold'>{profile?.displayName || 'Robert Fox'}</h4>
-                <div className='d-flex align-items-center gap-2 text-secondary mb-1'>
-                  <span>@{profile?.username || 'robert'}</span>
-                </div>
-                <div className='text-secondary'>{profile?.role || 'Software Engineer'}</div>
-              </div>
-            </div>
+      <div
+        className='shadow-sm'
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          backgroundColor: 'white'
+        }}
+      >
+        <div className='container' style={{ padding: '0px' }}>
+          <div
+            className={`card mb-2 shadow-sm rounded-start-top-4 rounded-end-top-4 transition-all ${
+              isCollapsed ? 'p-2' : 'p-4'
+            }`}
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 1000,
+              backgroundColor: 'white',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <div className='row'>
+              {/* Avatar + Info - Left Column */}
+              <div className='col-md-8 d-flex align-items-center'>
+                <img
+                  src={
+                    profile?.avatar
+                      ? profile.avatar
+                      : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
+                  }
+                  className='rounded-circle me-4'
+                  width={isCollapsed ? 44 : 100}
+                  height={isCollapsed ? 44 : 100}
+                  style={{ objectFit: 'cover', transition: 'all 0.3s ease' }}
+                />
 
-            {/* Stats - Right Column */}
-            <div className='col-md-4 d-flex align-items-center justify-content-end'>
-              <div className='d-flex gap-4 text-center'>
-                <div className='px-2'>
-                  <div className='fw-bold fs-4'>12</div>
-                  <div className='text-secondary'>Posts</div>
-                </div>
-                <div className='px-2'>
-                  <div className='fw-bold fs-4'>207</div>
-                  <div className='text-secondary'>Followers</div>
-                </div>
-                <div className='px-2'>
-                  <div className='fw-bold fs-4'>64</div>
-                  <div className='text-secondary'>Following</div>
-                </div>
+                {isCollapsed ? (
+            <h6 className="fw-bold mb-0">{profile?.displayName || 'Robert Fox'}</h6>
+          ) : (
+            <div>
+              <h4 className="mb-1 fw-bold">{profile?.displayName || 'Robert Fox'}</h4>
+              <div className="text-secondary">@{profile?.username || 'robert'}</div>
+              <div className="text-secondary">{profile?.role || 'Software Engineer'}</div>
+            </div>
+          )}
+
+                
               </div>
+
+              {!isCollapsed && (
+                <div className='col-md-4 d-flex align-items-center justify-content-end'>
+                  <div className='d-flex gap-4 text-center'>
+                    {/* Stats - Right Column */}
+                    <div className='col-md-4 d-flex align-items-center justify-content-end'>
+                      <div className='d-flex gap-4 text-center'>
+                        <div className='px-2'>
+                          <div className='fw-bold fs-4'>12</div>
+                          <div className='text-secondary'>Posts</div>
+                        </div>
+                        <div className='px-2'>
+                          <div className='fw-bold fs-4'>207</div>
+                          <div className='text-secondary'>Followers</div>
+                        </div>
+                        <div className='px-2'>
+                          <div className='fw-bold fs-4'>64</div>
+                          <div className='text-secondary'>Following</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Nav Tabs - Simplified and cleaner */}
-        <ul className='nav nav-tabs mb-4 border-0'>
-          <li className='nav-item'>
-            <NavLink
-              to='my-posts'
-              className={({ isActive }) =>
-                `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
-              }
-            >
-              My Posts
-            </NavLink>
-          </li>
-          <li className='nav-item'>
-            <NavLink
-              to='saved-posts'
-              className={({ isActive }) =>
-                `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
-              }
-            >
-              Saved Posts
-            </NavLink>
-          </li>
-          <li className='nav-item'>
-            <NavLink
-              to='settings'
-              className={({ isActive }) =>
-                `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
-              }
-            >
-              Settings
-            </NavLink>
-          </li>
-        </ul>
+          {/* Nav Tabs - Simplified and cleaner */}
+          <ul className='nav nav-tabs mb-4 border-0'>
+            <li className='nav-item'>
+              <NavLink
+                to='my-posts'
+                className={({ isActive }) =>
+                  `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
+                }
+              >
+                My Posts
+              </NavLink>
+            </li>
+            <li className='nav-item'>
+              <NavLink
+                to='saved-posts'
+                className={({ isActive }) =>
+                  `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
+                }
+              >
+                Saved Posts
+              </NavLink>
+            </li>
+            <li className='nav-item'>
+              <NavLink
+                to='settings'
+                className={({ isActive }) =>
+                  `nav-link px-4 ${isActive ? 'fw-medium text-dark border-bottom border-2 border-dark' : 'text-secondary'}`
+                }
+              >
+                Settings
+              </NavLink>
+            </li>
+          </ul>
+        </div>
       </div>
 
+      <div
+  ref={scrollRef}
+  style={{
+    height: 'calc(100vh - 300px)', // hoặc dynamic nếu cần
+    overflowY: 'auto'
+  }}
+>
+  <Outlet />
+</div>
+
       {/* Nội dung động */}
-      <Outlet />
     </div>
   )
 }
