@@ -32,6 +32,7 @@ import GroupInvites from './pages/Friend/MainContent/GroupInvites'
 import MyPost from './pages/PostList/MyPost'
 import SavedPost from './pages/PostList/SavedPost'
 import VideoCallWrapper from './components/videocall/VideoCall'
+import LoginWithQR from './pages/Login/LoginWithQR'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
@@ -65,7 +66,8 @@ export default function useRouteElements() {
             { path: path.verifyOTP, element: <VerifyOTP /> },
             { path: path.checkInbox, element: <CheckInbox /> },
             { path: path.loginEmail, element: <LoginEmail /> },
-            { path: path.verifyOTPFEmail, element: <VerifyOTPFEmail /> }
+            { path: path.verifyOTPFEmail, element: <VerifyOTPFEmail /> },
+            { path: '/loginByQRCode', element: <LoginWithQR /> }
           ]
         }
       ]

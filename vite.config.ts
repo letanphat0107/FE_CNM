@@ -18,6 +18,7 @@ export default defineConfig({
     }
   },
   define: {
-    global: 'globalThis'
+    global: 'globalThis',
+    __APP_ENV__: process.env.VITE_APP_ENV,
   }
 })
