@@ -10,7 +10,7 @@ export const URL_GET_MY_FEED = 'ola-chat/api/posts'
 export const URL_DELETE_FEED = 'ola-chat/api/posts'
 export const URL_UPDATE_FEED = 'ola-chat/api/posts' //body newFiles, filesToDelete, content
 export const URL_SHARE_FEED = 'ola-chat/api/posts' // body content , privacy
-export const URL_UPDATE_PRIVACY = 'ola-chat/api/posts/1/privacy' // body privacy
+export const URL_UPDATE_PRIVACY = 'ola-chat/api/posts/1/privacy' // body privacy ==> edit audience
 export const URL_GET_LIST_SHARED_FEED = 'ola-chat/api/posts/8/shares'
 
 // Interact with Feed
@@ -66,6 +66,9 @@ const feedApi = {
   },
     shareFeed(postId: number, body: { content: string; privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS' }) {
     return http.post<SuccessResponse<Post>>(`${URL_SHARE_FEED}/${postId}/share`, body)
+  },
+  updatePrivacy(postId: number, body: { privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS' }) {
+    return http.put<SuccessResponse<Post>>(`${URL_UPDATE_PRIVACY}/${postId}`, body)
   }
 }
 

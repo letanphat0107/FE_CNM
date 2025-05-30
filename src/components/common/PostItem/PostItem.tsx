@@ -192,21 +192,21 @@ const PostItem: React.FC<PostItemProps> = ({
                 {isOwner && dropdownActions?.edit && onEdit && (
                   <li>
                     <button className='dropdown-item' onClick={() => onEdit(post)}>
-                      Edit
+                      Edit post
                     </button>
                   </li>
                 )}
                 {isOwner && dropdownActions?.delete && onDelete && (
                   <li>
                     <button className='dropdown-item text-danger' onClick={() => onDelete(post.postId)}>
-                      Delete
+                      Delete post
                     </button>
                   </li>
                 )}
                 {dropdownActions?.save && onSave && (
                   <li>
                     <button className='dropdown-item' onClick={() => onSave(post.postId)}>
-                      Save
+                      Save post
                     </button>
                   </li>
                 )}
