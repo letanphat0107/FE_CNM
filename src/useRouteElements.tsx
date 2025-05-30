@@ -32,6 +32,7 @@ import GroupInvites from './pages/Friend/MainContent/GroupInvites'
 import VideoCallPage from './components/videocall/VideoCallPage'
 import MyPost from './pages/PostList/MyPost'
 import SavedPost from './pages/PostList/SavedPost'
+import VideoCallWrapper from './components/videocall/VideoCall'
 
 function ProtectedRoute() {
   const { isAuthenticated } = useContext(AppContext)
@@ -124,8 +125,8 @@ export default function useRouteElements() {
     },
 
     {
-      path: '/video-call/:channelId/:partnerId/:partnerAvt/:partnerName',
-      element: <VideoCallPage />
+      path:"/video-call",
+       element:<VideoCallWrapper />
     }
   ])
 

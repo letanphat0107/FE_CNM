@@ -20,6 +20,7 @@ interface Props {
 }
 
 const ChatBox = ({ currentUserId }: Props) => {
+  const {profile} = useContext(AppContext)  
   const { refreshConversations, selectedConversation, setSelectedConversation } = useContext(AppContext)
   const [newMessage, setNewMessage] = useState('')
   const [participants, setParticipants] = useState<Participant[]>([])
@@ -584,11 +585,13 @@ const ChatBox = ({ currentUserId }: Props) => {
     return () => container.removeEventListener('scroll', handleScroll)
   }, [hasMoreMessages, isLoadingMoreMessages, isLoadingMessages, currentPage, selectedConversation])
 
+  // Cập nhật hàm initVideoCall
+
   const initVideoCall = () => {
     if (!selectedConversation || !currentUserId) return
 
     // Tạo ID phòng từ conversationId
-    const channelId = selectedConversation.id
+    const channelId = `ola_${selectedConversation.id.replace(/-/g, '')}`
 
     // Lấy thông tin người nhận cuộc gọi
     let partnerInfo = {
@@ -616,7 +619,7 @@ const ChatBox = ({ currentUserId }: Props) => {
     }
 
     // Mở tab mới với đường dẫn đến trang video call
-    const url = `/video-call/${channelId}/${partnerInfo.id}/${encodeURIComponent(partnerInfo.avatar)}/${encodeURIComponent(partnerInfo.name)}`
+    const url = `/video-call?channelName=${encodeURIComponent(channelId)}&userId=${profile?.userId}&displayName=${profile?.displayName}&partnerAvatar=${encodeURIComponent(partnerInfo.avatar)}&partnerName=${encodeURIComponent(partnerInfo.name)}`
     window.open(url, '_blank')
   }
 
