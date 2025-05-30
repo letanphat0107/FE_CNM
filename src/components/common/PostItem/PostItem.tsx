@@ -63,7 +63,7 @@ const PostItem: React.FC<PostItemProps> = ({
 
   // Thêm state cho audience modal
   const [showAudienceModal, setShowAudienceModal] = useState<boolean>(false)
-  const [selectedPrivacy, setSelectedPrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>(post.privacy)
+  const [selectedPrivacy, setSelectedPrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>('PUBLIC')
   const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState<boolean>(false)
 
   // Thêm các state và function xử lý like/dislike
@@ -91,6 +91,10 @@ const PostItem: React.FC<PostItemProps> = ({
   const [loadingShares, setLoadingShares] = useState<boolean>(false)
   const [page, setPage] = useState<number>(0)
   const [hasMoreShares, setHasMoreShares] = useState<boolean>(true)
+
+  // Thêm state và hàm xử lý trạng thái save
+  const [isSaved, setIsSaved] = useState<boolean>(post.isSaved || false)
+  const [isSaving, setIsSaving] = useState<boolean>(false)
 
   // Fetch số lượng shares khi component mount
   useEffect(() => {
@@ -354,6 +358,31 @@ const PostItem: React.FC<PostItemProps> = ({
     }
   }
 
+  // Hàm xử lý save/unsave post
+  const handleToggleSave = async () => {
+    if (isSaving || !currentUser || !onSave) return
+
+    try {
+      setIsSaving(true)
+
+      // Cập nhật UI ngay (optimistic update)
+      setIsSaved(!isSaved)
+
+      // Gọi API thông qua callback
+      await onSave(post.postId)
+
+      // Thông báo thành công
+      toast.success(isSaved ? 'Post removed from favorites' : 'Post added to favorites')
+    } catch (error) {
+      // Nếu có lỗi, hoàn tác trạng thái
+      setIsSaved(isSaved)
+      console.error('Failed to toggle save status:', error)
+      toast.error('Failed to update save status')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return (
     <>
       <div className='post-card card mb-4'>
@@ -362,13 +391,17 @@ const PostItem: React.FC<PostItemProps> = ({
           <div className='d-flex justify-content-between align-items-center mb-3'>
             <div className='d-flex align-items-center'>
               <img
-                src={post.createdBy?.avatar || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'}
+                src={
+                  post.createdBy?.avatar ||
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
+                }
                 className='rounded-circle me-2'
                 alt={post.createdBy?.displayName}
                 width='48'
                 height='48'
                 onError={(e) => {
-                  ;(e.target as HTMLImageElement).src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
+                  ;(e.target as HTMLImageElement).src =
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtuphMb4mq-EcVWhMVT8FCkv5dqZGgvn_QiA&s'
                 }}
               />
               <div>
@@ -411,8 +444,9 @@ const PostItem: React.FC<PostItemProps> = ({
                   )}
                   {dropdownActions?.save && onSave && (
                     <li>
-                      <button className='dropdown-item' onClick={() => onSave(post.postId)}>
-                        Save post
+                      <button className='dropdown-item' onClick={handleToggleSave} disabled={isSaving}>
+                        <i className={`bi ${isSaved ? 'bi-bookmark-fill' : 'bi-bookmark'} me-2`}></i>
+                        {isSaving ? 'Processing...' : isSaved ? 'Unsave post' : 'Save post'}
                       </button>
                     </li>
                   )}

@@ -140,7 +140,7 @@ export default function MyPost() {
   const handleEditButtonClick = (post: Post) => {
     setEditingPost(post)
     setEditContent(post.content)
-    setEditPrivacy(post.privacy)
+    setEditPrivacy(post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS')
     setUploadedFilesEdit([])
     setFilesToDelete([])
     setShowEditModal(true)
@@ -289,6 +289,45 @@ export default function MyPost() {
     }
   }
 
+  // Cập nhật hàm handleSavePost để gọi API và theo dõi trạng thái save
+  const handleSavePost = async (postId: number) => {
+    try {
+      // Tìm post trong danh sách hiện tại
+      const post = posts.find((p) => p.postId === postId)
+      if (!post) return
+
+      // Kiểm tra post đã được save chưa
+      const isSaved = post.isSaved
+
+      // Cập nhật state tạm thời
+      setPosts((prevPosts) =>
+        prevPosts.map((p) => {
+          if (p.postId === postId) {
+            return { ...p, isSaved: !isSaved }
+          }
+          return p
+        })
+      )
+
+      // Gọi API tương ứng
+      if (isSaved) {
+        await feedApi.removeFavoriteFeed(postId)
+        toast.success('Post removed from favorites successfully!')
+      } else {
+        await feedApi.addFavoriteFeed(postId)
+        toast.success('Post saved to favorites successfully!')
+      }
+    } catch (error) {
+      console.error('Failed to update favorite status:', error)
+      toast.error('Failed to update favorite status')
+
+      // Revert optimistic update on error
+      const response = await feedApi.getMyFeed({ page: 0, size: 10 })
+      const data = response.data.data
+      setPosts(data.posts)
+    }
+  }
+
   return (
     <div className='my-posts-container'>
       <div className='container py-4'>
@@ -338,11 +377,14 @@ export default function MyPost() {
                     onEdit={(post) => handleEditButtonClick(post)}
                     onDelete={(postId) => handleDeletePost(postId)}
                     onUpdatePrivacy={handleUpdatePrivacy}
+                    onSave={(postId) => {
+                      handleSavePost(postId)
+                    }}
                     // Chỉ hiển thị Edit và Delete cho MyPost
                     dropdownActions={{
                       edit: true,
                       delete: true,
-                      save: false,
+                      save: true,
                       report: false,
                       editAudience: true
                     }}
@@ -481,9 +523,7 @@ export default function MyPost() {
                         </div>
                         <div className='ms-3'>
                           <div>You posted {formatPostTime(post.createdAt)}</div>
-                          <small className='text-muted'>
-                            {post.content}
-                          </small>
+                          <small className='text-muted'>{post.content}</small>
                         </div>
                       </div>
                     </li>

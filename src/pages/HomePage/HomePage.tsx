@@ -323,9 +323,43 @@ export default function HomePage() {
     }
   }
 
-  function handleSavePost(postId: number): void {
-    
-    toast.success('Post saved successfully!')
+  // Cập nhật hàm handleSavePost để gọi API và theo dõi trạng thái save
+  const handleSavePost = async (postId: number) => {
+    try {
+      // Tìm post trong danh sách hiện tại
+      const post = posts.find((p) => p.postId === postId)
+      if (!post) return
+
+      // Kiểm tra post đã được save chưa
+      const isSaved = post.isSaved
+
+      // Cập nhật state tạm thời
+      setPosts((prevPosts) =>
+        prevPosts.map((p) => {
+          if (p.postId === postId) {
+            return { ...p, isSaved: !isSaved }
+          }
+          return p
+        })
+      )
+
+      // Gọi API tương ứng
+      if (isSaved) {
+        await feedApi.removeFavoriteFeed(postId)
+      } else {
+        await feedApi.addFavoriteFeed(postId)
+      }
+
+      // Thông báo thành công
+      toast.success(isSaved ? 'Post removed from favorites successfully!' : 'Post saved to favorites successfully!')
+    } catch (error) {
+      console.error('Failed to update favorite status:', error)
+      toast.error('Failed to update favorite status')
+
+      // Revert optimistic update if API call fails
+      const originalPosts = await feedApi.getHomeFeed()
+      setPosts(originalPosts.data.data)
+    }
   }
 
   function handleReportPost(postId: number): void {

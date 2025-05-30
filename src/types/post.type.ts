@@ -1,13 +1,14 @@
 export type Post = {
   postId: number
-  createdBy: User
   content: string
-  attachments: Attachment[]
-  privacy: 'PUBLIC' | 'PRIVATE' | 'FRIENDS' // enum tùy backend
   createdAt: string
   updatedAt: string | null
+  privacy: string
+  createdBy: User
+  attachments: Attachment[]
   likedUsers: User[]
   comments: Comment[]
+  isSaved?: boolean // Thêm trường này để theo dõi trạng thái save
   originalPostId: number | null
   originalPost: Post | null // đệ quy nếu là post share
 }
@@ -47,8 +48,7 @@ export type PagingPost = {
 
 // For list shared posts
 export type PostShare = {
-  shareId: number;
-  sharedBy: User;
-  sharedAt: string; // ISO datetime string
-};
-
+  shareId: number
+  sharedBy: User
+  sharedAt: string // ISO datetime string
+}

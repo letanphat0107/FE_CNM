@@ -39,7 +39,7 @@ export default function Profile() {
           top: 0,
           zIndex: 1000,
           backgroundColor: 'white',
-                 boxShadow: `
+          boxShadow: `
       0 -2px 5px rgba(0, 0, 0, 0.08),   /* Top */
       0  2px 5px rgba(0, 0, 0, 0.08),   /* Bottom */
      -2px 0 5px rgba(0, 0, 0, 0.06),    /* Left */
@@ -50,8 +50,7 @@ export default function Profile() {
         <div
           className='container'
           style={{
-            padding: '0px',
-     
+            padding: '0px'
           }}
         >
           <div
@@ -65,9 +64,7 @@ export default function Profile() {
               borderTopLeftRadius: '12px',
               borderTopRightRadius: '12px',
               borderBottomLeftRadius: '0px',
-              borderBottomRightRadius: '0px',
-
-    
+              borderBottomRightRadius: '0px'
             }}
           >
             <div className='row'>
@@ -91,7 +88,7 @@ export default function Profile() {
                   <div>
                     <h4 className='mb-1 fw-bold'>{profile?.displayName || 'Robert Fox'}</h4>
                     <div className='text-secondary'>@{profile?.username || 'robert'}</div>
-                    <div className='text-secondary'>{profile?.role || 'Software Engineer'}</div>
+                    {/* <div className='text-secondary'>{profile?.role || 'Software Engineer'}</div> */}
                   </div>
                 )}
               </div>

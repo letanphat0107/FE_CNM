@@ -87,7 +87,7 @@ export default function useRouteElements() {
               children: [
                 {
                   index: true, // 👉 Mặc định render MyPost tại /profile
-                  element: <Navigate to="my-posts" replace />
+                  element: <Navigate to='my-posts' replace />
                 },
                 { path: path.myPosts, element: <MyPost /> },
                 { path: path.savedPosts, element: <SavedPost /> },
