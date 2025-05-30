@@ -76,7 +76,7 @@ const Notifications = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true)
-      const response = await notificationAPI.getNotifycations(page, 2, 'desc')
+      const response = await notificationAPI.getNotifycations(page, 4, 'desc')
       const notificationResponse = response.data.data
       const newNotifications: Notification[] = notificationResponse.content
 
