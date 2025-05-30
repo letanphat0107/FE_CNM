@@ -10,17 +10,28 @@ interface Props {
   participants: Participant[]
   conversationType: string
   onRecall: (messageId: string) => void
-  onForward: (message: Message) => void // Thêm prop này
+  onForward: (message: Message) => void
+  onDelete: (messageId: string) => void // Thêm prop xóa tin nhắn
 }
 
-const MessageItem = ({ message, currentUserId, participants, conversationType, onRecall, onForward }: Props) => {
+const MessageItem = ({ 
+  message, 
+  currentUserId, 
+  participants, 
+  conversationType, 
+  onRecall, 
+  onForward,
+  onDelete
+}: Props) => {
   const [isHovered, setIsHovered] = useState(false)
   const isMine = message.senderId === currentUserId
   const isSending = (message as any).isSending
   const isError = (message as any).isError
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [previewVideo, setPreviewVideo] = useState<string | null>(null)
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  
+  // State theo dõi tin nhắn đã bị xóa
+  const [isDeleted, setIsDeleted] = useState(false)
 
   const sender = participants.find((u) => u.userId === message.senderId)
   const avatar = sender?.avatar || '/default-avatar.png'
@@ -32,6 +43,17 @@ const MessageItem = ({ message, currentUserId, participants, conversationType, o
 
   const handleForward = () => {
     onForward(message)
+  }
+  
+  // Hàm xử lý xóa tin nhắn
+  const handleDelete = (messageId: string) => {
+    setIsDeleted(true)
+    onDelete(messageId)
+  }
+
+  // Không render gì nếu tin nhắn đã bị xóa
+  if (isDeleted) {
+    return null
   }
 
   const getExtension = (url?: string | null) => {
@@ -357,7 +379,12 @@ const MessageItem = ({ message, currentUserId, participants, conversationType, o
                 padding: '5px'
               }}
             >
-              <MessageActions messageId={message.id} handleRecall={onRecall} handleForward={handleForward} />
+              <MessageActions 
+                messageId={message.id} 
+                handleRecall={onRecall} 
+                handleForward={handleForward}
+                handleDelete={handleDelete} // Thêm handler xóa tin nhắn
+              />
             </div>
           )}
         </div>

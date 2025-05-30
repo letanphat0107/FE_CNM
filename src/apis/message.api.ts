@@ -84,7 +84,7 @@ const messageAPI = {
     return stompClient
   },
   deleteMessage( messageId: string) {
-    return http.delete<SuccessResponse<null>>(`${URL_DELETE_MESSAGE}/messages/${messageId}/hiddenForUser`)
+    return http.delete<SuccessResponse<null>>(`${URL_DELETE_MESSAGE}/${messageId}/hiddenForUser`)
   }
 }
 

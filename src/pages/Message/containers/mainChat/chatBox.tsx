@@ -665,6 +665,12 @@ const ChatBox = ({ currentUserId }: Props) => {
     window.open(url, '_blank')
   }
 
+  // Thêm hàm xử lý xóa tin nhắn
+  const handleDeleteMessage = (messageId: string) => {
+    // Cập nhật UI ngay lập tức bằng cách lọc tin nhắn
+    setMessages((prevMessages) => prevMessages.filter((m) => m.id !== messageId))
+  }
+
   return (
     <>
       {selectedConversation ? (
@@ -763,6 +769,7 @@ const ChatBox = ({ currentUserId }: Props) => {
                 conversationType={(selectedConversation?.type as 'PRIVATE' | 'GROUP') || 'PRIVATE'}
                 onRecall={handleRecallMessage}
                 onForward={handleForwardMessage}
+                onDelete={handleDeleteMessage}
               />
             ))}
             <div ref={bottomRef} />
