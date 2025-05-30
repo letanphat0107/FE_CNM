@@ -10,7 +10,7 @@ export interface PostItemProps {
   currentUser?: User | null
   onComment?: (postId: number, content: string) => void
   onLike?: (postId: number) => void
-  onShare?: (post: Post) => void
+  onShare?: (postId: number) => void
   onEdit?: (post: Post) => void
   onDelete?: (postId: number) => void
   onReport?: (postId: number) => void
@@ -196,7 +196,7 @@ const PostItem: React.FC<PostItemProps> = ({
 
       // Nếu có callback onShare thì gọi
       if (onShare) {
-        onShare(post)
+        onShare(post.postId)
       }
     } catch (error) {
       console.error('Failed to share post:', error)

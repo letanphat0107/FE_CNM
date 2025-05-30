@@ -371,25 +371,6 @@ export default function HomePage() {
     setShowComments(!showComments)
   }
 
-  // Định nghĩa hàm xử lý share post
-  const handleSharePost = async (post: Post) => {
-    try {
-      // Gọi API share post
-      await feedApi.shareFeed(post.postId, {
-        content: post.content,
-        privacy: post.privacy as 'PUBLIC' | 'PRIVATE' | 'FRIENDS'
-      })
-
-      // Refresh posts sau khi share thành công
-      const response = await feedApi.getHomeFeed()
-      setPosts(response.data.data)
-
-      toast.success('Post shared successfully!')
-    } catch (error) {
-      console.error('Failed to share post:', error)
-      toast.error('Failed to share post. Please try again.')
-    }
-  }
 
   return (
     <div className='homepage bg-transparent' style={{padding: '0px' }}>
@@ -760,7 +741,7 @@ export default function HomePage() {
                   onDelete={(postId) => handleDeletePost(postId)}
                   onSave={(postId) => handleSavePost(postId)}
                   onReport={(postId) => handleReportPost(postId)}
-                  onShare={handleSharePost}
+                  onShare={(postId) => handleSavePost(postId)}
                   dropdownActions={{
                     edit: true,
                     delete: true,
