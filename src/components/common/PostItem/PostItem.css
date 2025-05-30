@@ -115,3 +115,116 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Thêm vào file PostItem.css */
+.post-stat {
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.post-stat:hover {
+  background-color: #f0f2f5;
+}
+
+.modal-dialog-scrollable .modal-body {
+  overflow-y: auto;
+}
+
+.replies {
+  position: relative;
+}
+
+.replies::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 16px;
+  height: calc(100% - 16px);
+  width: 2px;
+  background-color: #e9ecef;
+}
+
+/* Animation for modal */
+.modal.show {
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Styles */
+.modal.show {
+  display: block;
+  padding-right: 15px;
+}
+
+.modal-dialog {
+  margin: 1.75rem auto;
+  max-width: 500px;
+}
+
+.modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 3.5rem);
+}
+
+.modal-content {
+  position: relative;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  align-items: center;
+}
+
+.modal-title {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.modal-body {
+  position: relative;
+  padding: 1rem;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
+
+/* Add animation to the modal */
+.modal.show .modal-dialog {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fix scroll issues */
+body.modal-open {
+  overflow: hidden;
+  padding-right: 15px; /* Prevents page shift when modal opens */
+}
+
+.modal-open .modal {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.modal-dialog-scrollable .modal-content {
+  max-height: 90vh;
+}
+
+.modal-dialog-scrollable .modal-body {
+  overflow-y: auto;
+}
