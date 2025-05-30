@@ -4,12 +4,6 @@ import { SuccessResponse } from 'src/types/utils.type'
 import http from 'src/utils/http'
 import { URL_GET_FRIENDS } from './friend.api';
 
-interface BodyUpdateProfile
-  extends Omit<User, 'id' | 'role' | 'createdAt' | 'updatedAt' | 'email' | 'authProvider' | 'username' | 'status'> {
-  password?: string
-  newPassword?: string
-}
-
 export const URL_GET_PROFILE = 'ola-chat/users/my-info'
 export const URL_UPDATE_PROFILE = 'ola-chat/users/my-update'
 export const URL_UPLOAD_AVATAR = 'ola-chat/users/my-avatar'
@@ -21,7 +15,7 @@ const userApi = {
   getProfile() {
     return http.get<SuccessResponse<User>>(URL_GET_PROFILE)
   },
-  updateProfile(body: BodyUpdateProfile) {
+  updateProfile(body: FormData) {
     return http.put<SuccessResponse<User>>(URL_UPDATE_PROFILE, body)
   },
   uploadAvatar(body: FormData) {

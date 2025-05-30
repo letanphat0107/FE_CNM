@@ -50,23 +50,23 @@ function App() {
       try {
         // Check if browser supports notifications and Firebase messaging
         if (!('Notification' in window)) {
-          console.log('This browser does not support notifications')
+          // console.log('This browser does not support notifications')
           return
         }
         
         const isMessagingSupported = await isSupported()
         if (!isMessagingSupported || !messaging) {
-          console.log('Firebase messaging is not supported in this browser')
+          // console.log('Firebase messaging is not supported in this browser')
           return
         }
 
         // Request notification permission
         const permission = await Notification.requestPermission()
         setNotificationPermission(permission)
-        console.log('Notification permission:', permission)
+        // console.log('Notification permission:', permission)
 
         if (permission !== 'granted') {
-          console.log('Notification permission denied')
+          // console.log('Notification permission denied')
           return
         }
 
@@ -77,18 +77,18 @@ function App() {
         })
         
         if (!token) {
-          console.log('No registration token available')
+          // console.log('No registration token available')
           return
         }
 
-        console.log('FCM Token:', token)
+  
 
         // Check if token has been sent already
         const lastToken = localStorage.getItem('lastFCMToken')
         const userId = profile?.userId
         
         if (!userId) {
-          console.log('User is not authenticated')
+          // console.log('User is not authenticated')
           return
         }
 
@@ -116,7 +116,7 @@ function App() {
           setIsRegistered(true)
           
         } else {
-          console.log('Token already registered for this user')
+          // console.log('Token already registered for this user')
           setIsRegistered(true)
         }
       } catch (error) {
@@ -130,7 +130,7 @@ function App() {
 
       // Handle foreground messages
       const unsubscribe = onMessage(messaging, (payload) => {
-        console.log('Received foreground message:', payload)
+        // console.log('Received foreground message:', payload)
         
         // Show toast notification for foreground messages
         const notification = payload.notification
