@@ -1,6 +1,6 @@
 import { de } from 'date-fns/locale'
 import { get } from 'lodash'
-import { PagingPost, Post, PostShare } from 'src/types/post.type'
+import { PagingPost, Post, PostShare, User } from 'src/types/post.type'
 import { SuccessResponse } from 'src/types/utils.type'
 import http from 'src/utils/http'
 
@@ -15,8 +15,8 @@ export const URL_UPDATE_PRIVACY = 'ola-chat/api/posts' // body privacy ==> edit 
 export const URL_GET_LIST_SHARED_FEED = 'ola-chat/api/posts'
 
 // Interact with Feed
-export const URL_LIKE_FEED = 'ola-chat/api/posts/3/like'
-export const URL_UNLIKE_FEED = 'ola-chat/api/posts/3/like'
+export const URL_LIKE_FEED = 'ola-chat/api/posts'
+export const URL_UNLIKE_FEED = 'ola-chat/api/posts'
 export const URL_GET_LIST_USER_LIKED = 'ola-chat/api/posts/3/likes'
 
 // Comment
@@ -73,6 +73,15 @@ const feedApi = {
   },
   getListSharedFeed(postId: number, params: { page: number; size: number }) {
     return http.get<SuccessResponse<PostShare[]>>(`${URL_GET_LIST_SHARED_FEED}/${postId}/shares`, { params })
+  },
+  likeFeed(postId: number) {
+    return http.post<SuccessResponse<null>>(`${URL_LIKE_FEED}/${postId}/like`)
+  },
+  unlikeFeed(postId: number) {
+    return http.delete<SuccessResponse<null>>(`${URL_UNLIKE_FEED}/${postId}/like`)
+  },
+  getListUserLiked(postId: number, params: { page: number; size: number }) {
+    return http.get<SuccessResponse<User[]>>(`${URL_GET_LIST_USER_LIKED}/${postId}/likes`, { params })
   }
 }
 

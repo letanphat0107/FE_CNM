@@ -1,5 +1,5 @@
 import { useContext, useState, useRef } from 'react'
-import './HomePage.css'
+import './HomePageCS.css'
 import { AppContext } from 'src/contexts/app.context'
 import { Attachment, Post, User, Comment } from 'src/types/post.type'
 import feedApi from 'src/apis/feed.api'
