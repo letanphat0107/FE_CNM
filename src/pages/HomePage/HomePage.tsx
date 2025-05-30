@@ -324,7 +324,7 @@ export default function HomePage() {
   }
 
   function handleSavePost(postId: number): void {
-    // Implement post saving logic here
+    
     toast.success('Post saved successfully!')
   }
 

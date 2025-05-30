@@ -40,9 +40,9 @@ export const URL_GET_HOME_FEED = 'ola-chat/api/posts/feed'
 // export const URL_SEARCH_FEED = 'ola-chat/api/posts/search'
 
 // Favorite feed
-// export const URL_FAVORITE_FEED = 'ola-chat/api/posts/favorites'
-// export const URL_ADD_FAVORITE_FEED = 'ola-chat/api/posts/8/favorite'
-// export const URL_REMOVE_FAVORITE_FEED = 'ola-chat/api/posts/9/favorite'
+export const URL_FAVORITE_FEED = 'ola-chat/api/posts/favorites'
+export const URL_ADD_FAVORITE_FEED = 'ola-chat/api/posts'
+export const URL_REMOVE_FAVORITE_FEED = 'ola-chat/api/posts'
 
 const feedApi = {
   postNewFeed(body: FormData) {
@@ -85,6 +85,15 @@ const feedApi = {
   },
   getHomeFeed(){
     return http.get<SuccessResponse<Post[]>>(URL_GET_HOME_FEED)
+  },
+  getFavoriteFeed() {
+    return http.get<SuccessResponse<Post[]>>(URL_FAVORITE_FEED)
+  },
+  addFavoriteFeed(postId: number) {
+    return http.post<SuccessResponse<null>>(`${URL_ADD_FAVORITE_FEED}/${postId}/favorite`)
+  },
+  removeFavoriteFeed(postId: number) {
+    return http.delete<SuccessResponse<null>>(`${URL_REMOVE_FAVORITE_FEED}/${postId}/favorite`)
   }
 }
 
