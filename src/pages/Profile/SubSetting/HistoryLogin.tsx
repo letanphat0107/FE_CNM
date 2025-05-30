@@ -38,30 +38,47 @@ export default function HistoryLogin() {
   if (error) return <div className='text-danger'>{error}</div>
 
   return (
-    <div className='container mt-4'>
-      <h3 className='mb-4'>Lịch sử đăng nhập</h3>
-      {loginHistory.length === 0 ? (
-        <p>Không có lịch sử đăng nhập nào.</p>
-      ) : (
-        <ul className='list-group'>
-          {loginHistory.map((item, index) => (
-            <li key={index} className='list-group-item text-start'>
-              <p>
-                <strong>Thiết bị:</strong> {item.userAgent}
-              </p>
-              <p>
-                <strong>Thời gian đăng nhập:</strong> {formatDateTime(item.loginTime)}
-              </p>
-              <p>
-                <strong>Thời gian đăng xuất:</strong> {formatDateTime(item.logoutTime)}
-              </p>
-              <p>
-                <strong>Trạng thái:</strong> {item.status}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
+  <div className="container mt-3">
+    <h3 className="mb-4">🕘 Lịch sử đăng nhập</h3>
+    {loginHistory.length === 0 ? (
+      <div className="alert alert-info">Không có lịch sử đăng nhập nào.</div>
+    ) : (
+      <div className="row row-cols-1 g-3">
+        {loginHistory.map((item, index) => (
+          <div key={index} className="col">
+            <div className="card shadow-sm border-0">
+              <div className="card-body">
+                <div className="mb-2">
+                  <strong>Thiết bị:</strong> {item.userAgent}
+                </div>
+                <div className="mb-2">
+                  <strong>Thời gian đăng nhập:</strong> {formatDateTime(item.loginTime)}
+                </div>
+                <div className="mb-2">
+                  <strong>Thời gian đăng xuất:</strong>{' '}
+                  {item.logoutTime ? formatDateTime(item.logoutTime) : 'Chưa đăng xuất'}
+                </div>
+                <div>
+                  <strong>Trạng thái:</strong>{' '}
+                  <span
+                    className={`badge ${
+                      item.status === 'SUCCESS'
+                        ? 'bg-success'
+                        : item.status === 'FAILED'
+                        ? 'bg-danger'
+                        : 'bg-secondary'
+                    }`}
+                  >
+                    {item.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)
+
 }
