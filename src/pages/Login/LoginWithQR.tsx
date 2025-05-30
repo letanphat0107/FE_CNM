@@ -5,9 +5,9 @@ import { Stomp } from '@stomp/stompjs'
 import axios from 'axios'
 import { AppContext } from 'src/contexts/app.context'
 import { useNavigate } from 'react-router-dom'
-import { setProfileToLS, setAccessTokenToLS } from 'src/utils/auth'
+import { setProfileToLS, setAccessTokenToLS, setRefreshTokenToLS } from 'src/utils/auth'
 import config from 'src/constants/config'
-import { AuthContainer } from 'src/components/layout/AuthContainer'
+import { set } from 'lodash'
 
 export default function LoginWithQR() {
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -108,8 +108,9 @@ export default function LoginWithQR() {
             const payload = JSON.parse(message.body)
             if (payload.type === 'USER_INFO_PREVIEW') setUserInfo(payload.user)
             else if (payload.type === 'QR_LOGIN_SUCCESS') {
-              const { token, user } = payload
-              setAccessTokenToLS(token)
+              const { accessToken, refreshToken, user } = payload
+              setAccessTokenToLS(accessToken)
+              setRefreshTokenToLS(refreshToken)
               setProfileToLS(user)
               setIsAuthenticated(true)
               setProfile(user)
