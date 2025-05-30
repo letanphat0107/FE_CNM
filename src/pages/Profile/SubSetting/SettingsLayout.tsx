@@ -17,7 +17,7 @@ export default function SettingsLayout() {
                 border: 'none'
               })}
             >
-              General
+              Chung
             </NavLink>
 
             <NavLink
@@ -30,7 +30,7 @@ export default function SettingsLayout() {
                 border: 'none'
               })}
             >
-              Account
+              Tài khoản
             </NavLink>
 
             <NavLink
@@ -43,7 +43,7 @@ export default function SettingsLayout() {
                 border: 'none'
               })}
             >
-              History Login
+              Lịch sử đăng nhập
             </NavLink>
 
             <NavLink
@@ -56,7 +56,7 @@ export default function SettingsLayout() {
                 border: 'none'
               })}
             >
-              Logout
+              Đăng xuất
             </NavLink>
           </div>
         </div>

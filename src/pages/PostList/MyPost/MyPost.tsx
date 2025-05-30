@@ -423,13 +423,13 @@ export default function MyPost() {
           <div className='col-md-4'>
             <div className='card'>
               <div className='card-header bg-white'>
-                <h5 className='mb-0'>Post Statistics</h5>
+                <h5 className='mb-0'>Thống kê bài đăng</h5>
               </div>
               <div className='card-body'>
                 <div className='d-flex justify-content-between mb-3'>
                   <div className='text-center'>
                     <h5>{posts.length}</h5>
-                    <div className='text-muted small'>Total Posts</div>
+                    <div className='text-muted small'>Tổng số bài</div>
                   </div>
                   <div className='text-center'>
                     <h5>
@@ -437,7 +437,7 @@ export default function MyPost() {
                         return acc + post.likedUsers.length
                       }, 0)}
                     </h5>
-                    <div className='text-muted small'>Total Likes</div>
+                    <div className='text-muted small'>Tổng lượt thích</div>
                   </div>
                   <div className='text-center'>
                     <h5>
@@ -445,7 +445,7 @@ export default function MyPost() {
                         return acc + (post.comments ? post.comments.length : 0)
                       }, 0)}
                     </h5>
-                    <div className='text-muted small'>Comments</div>
+                    <div className='text-muted small'>Bình luận</div>
                   </div>
                 </div>
                 <hr />

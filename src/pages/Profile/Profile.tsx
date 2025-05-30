@@ -128,7 +128,7 @@ export default function Profile() {
                   `nav-link px-4 ${isActive ? 'fw-bold text-dark border-0' : 'text-secondary'}`
                 }
               >
-                My Posts
+                Bài đăng
               </NavLink>
             </li>
             <li className='nav-item'>
@@ -138,7 +138,7 @@ export default function Profile() {
                   `nav-link px-4 ${isActive ? 'fw-bold text-dark border-0' : 'text-secondary'}`
                 }
               >
-                Saved Posts
+                Đã lưu
               </NavLink>
             </li>
             <li className='nav-item'>
@@ -148,7 +148,7 @@ export default function Profile() {
                   `nav-link px-4 ${isActive ? 'fw-bold text-dark border-0' : 'text-secondary'}`
                 }
               >
-                Settings
+                Cài đặt
               </NavLink>
             </li>
           </ul>

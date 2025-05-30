@@ -172,10 +172,10 @@ const Conversations = ({ onPress }: Props) => {
       <style>{fadeInMoveAnimation}</style>
       <div className='chat-list border-end' style={{ width: '100%', maxWidth: '268px' }}>
         <div className='d-flex justify-content-between align-items-center px-4 py-3 border-bottom'>
-          <h6 className='mb-0'>Messages</h6>
+          <h6 className='mb-0'>Tin nhắn</h6>
           <div className='d-flex align-items-center gap-3'>
             <span className='text-muted' style={{ fontSize: '13px' }}>
-              Online
+              Trực tuyến
             </span>
             <button className='btn btn-link text-dark p-0'>
               <i className='fas fa-ellipsis-h'></i>
@@ -255,7 +255,7 @@ const Conversations = ({ onPress }: Props) => {
             style={{ fontSize: '14px', cursor: 'pointer' }}
           >
             <i className='far fa-edit me-2'></i>
-            New Message
+            Tin nhắn mới
           </div>
         </div>
       </div>

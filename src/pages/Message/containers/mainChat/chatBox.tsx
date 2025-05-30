@@ -903,12 +903,12 @@ const ChatBox = ({ currentUserId }: Props) => {
                 />
               </svg>
             </div>
-            <h5 className='mb-3'>Your messages</h5>
+            <h5 className='mb-3'>Tin nhắn của bạn</h5>
             <p className='text-muted mb-4' style={{ whiteSpace: 'nowrap' }}>
-              Select a person to display their chat or start a new conversation.
+              Chọn một người bạn để bắt đầu cuộc hội thoại.
             </p>
             <button className='btn btn-primary rounded-pill px-4' style={{ backgroundColor: '#4C68D5' }}>
-              New message
+              Tin nhắn mới
             </button>
           </div>
         </div>
