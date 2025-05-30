@@ -26,7 +26,10 @@ const path = {
    generalSetting: '/profile/settings/general',
    accountSetting: '/profile/settings/account',
    logoutSetting: '/profile/settings/logout',
-   historyLogin: '/profile/settings/history-login'
+   historyLogin: '/profile/settings/history-login',
+
+   //video call
+   videoCall: '/video-call',
 
 }
 
