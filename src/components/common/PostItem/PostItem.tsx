@@ -66,6 +66,17 @@ const PostItem: React.FC<PostItemProps> = ({
   const [selectedPrivacy, setSelectedPrivacy] = useState<'PUBLIC' | 'PRIVATE' | 'FRIENDS'>(post.privacy)
   const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState<boolean>(false)
 
+  // Thêm các state và function xử lý like/dislike
+  // Thêm state mới cho phần likes
+  const [likedUsers, setLikedUsers] = useState<User[]>(post.likedUsers || [])
+  const [isLiking, setIsLiking] = useState<boolean>(false)
+  const [isLiked, setIsLiked] = useState<boolean>(
+    currentUser ? post.likedUsers.some((user) => user.userId === currentUser.userId) : false
+  )
+  const [loadingLikedUsers, setLoadingLikedUsers] = useState<boolean>(false)
+  const [hasMoreLikes, setHasMoreLikes] = useState<boolean>(true)
+  const [likePage, setLikePage] = useState<number>(0)
+
   // Xác định xem post này có hiển thị comments hay không
   const isCommentsVisible = typeof showComments === 'boolean' ? showComments : showComments && showComments[post.postId]
 
@@ -82,21 +93,21 @@ const PostItem: React.FC<PostItemProps> = ({
   const [hasMoreShares, setHasMoreShares] = useState<boolean>(true)
 
   // Fetch số lượng shares khi component mount
-useEffect(() => {
-  const fetchShareCount = async () => {
-    try {
-      const response = await feedApi.getListSharedFeed(post.postId, {
-        page: 0,
-        size: 5 // Chỉ lấy 5 người chia sẻ gần nhất để hiển thị số lượng
-      });
-      setSharedUsers(response.data.data);
-    } catch (error) {
-      console.error('Failed to fetch share count:', error);
+  useEffect(() => {
+    const fetchShareCount = async () => {
+      try {
+        const response = await feedApi.getListSharedFeed(post.postId, {
+          page: 0,
+          size: 5 // Chỉ lấy 5 người chia sẻ gần nhất để hiển thị số lượng
+        })
+        setSharedUsers(response.data.data)
+      } catch (error) {
+        console.error('Failed to fetch share count:', error)
+      }
     }
-  };
 
-  fetchShareCount();
-}, [post.postId]);
+    fetchShareCount()
+  }, [post.postId])
 
   // Fetch người share post
   const fetchSharedUsers = async (reset: boolean = false) => {
@@ -142,12 +153,6 @@ useEffect(() => {
     if (!loadingShares && hasMoreShares) {
       fetchSharedUsers()
     }
-  }
-
-  // Hiển thị modal likes
-  const handleShowLikesModal = () => {
-    setShowLikesModal(true)
-    // Ở đây có thể fetch danh sách người thích từ API
   }
 
   // Hiển thị modal comments
@@ -266,6 +271,88 @@ useEffect(() => {
       gridTemplateColumns: '1fr 1fr',
       gridTemplateRows: '150px 150px',
       gap: '4px'
+    }
+  }
+
+  // Hàm xử lý like/unlike post
+  const handleToggleLike = async () => {
+    if (isLiking || !currentUser || !onLike) return
+
+    try {
+      setIsLiking(true)
+
+      if (isLiked) {
+        // Unlike post
+        await feedApi.unlikeFeed(post.postId)
+        setLikedUsers((prev) => prev.filter((user) => user.userId !== currentUser.userId))
+        setIsLiked(false)
+      } else {
+        // Like post
+        await feedApi.likeFeed(post.postId)
+        // Thêm current user vào danh sách liked users
+        setLikedUsers((prev) => [
+          {
+            userId: currentUser.userId,
+            username: currentUser.username,
+            displayName: currentUser.displayName,
+            avatar: currentUser.avatar || ''
+          },
+          ...prev
+        ])
+        setIsLiked(true)
+      }
+
+      // Gọi callback để cập nhật state ở component cha nếu cần
+      onLike(post.postId)
+    } catch (error) {
+
+    } finally {
+      setIsLiking(false)
+    }
+  }
+
+  // Fetch danh sách người like với phân trang
+  const fetchLikedUsers = async (reset: boolean = false) => {
+    try {
+      setLoadingLikedUsers(true)
+      const newPage = reset ? 0 : likePage
+
+      const response = await feedApi.getListUserLiked(post.postId, {
+        page: newPage,
+        size: 10
+      })
+
+      const data = response.data.data
+
+      if (reset) {
+        setLikedUsers(data)
+      } else {
+        setLikedUsers((prev) => [...prev, ...data])
+      }
+
+      setHasMoreLikes(data.length === 10)
+
+      if (!reset) {
+        setLikePage((prev) => prev + 1)
+      }
+    } catch (error) {
+
+    } finally {
+      setLoadingLikedUsers(false)
+    }
+  }
+
+  // Hiển thị modal likes
+  const handleShowLikesModal = async () => {
+    setLikePage(0)
+    setShowLikesModal(true)
+    await fetchLikedUsers(true)
+  }
+
+  // Load more likes
+  const handleLoadMoreLikes = () => {
+    if (!loadingLikedUsers && hasMoreLikes) {
+      fetchLikedUsers()
     }
   }
 
@@ -421,7 +508,8 @@ useEffect(() => {
                     className='bg-primary rounded-circle p-1 me-1 d-flex align-items-center justify-content-center'
                     style={{ width: '20px', height: '20px' }}
                   >
-                    <i className='bi bi-hand-thumbs-up-fill text-white small'></i>
+                    <i className="fas fa-thumbs-up text-white small"></i>
+
                   </div>
                   <span className='text-muted small'>{post.likedUsers.length}</span>
                 </div>
@@ -453,10 +541,12 @@ useEffect(() => {
           <div className='d-flex border-top border-bottom py-2 mt-3'>
             {onLike && (
               <button
-                className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
-                onClick={() => onLike(post.postId)}
+                className={`btn ${isLiked ? 'btn-primary text-white' : 'btn-light'} flex-grow-1 d-flex align-items-center justify-content-center`}
+                onClick={handleToggleLike}
+                disabled={isLiking}
               >
-                <i className='bi bi-hand-thumbs-up me-2'></i> Like ({post.likedUsers.length})
+                <i className={`bi ${isLiked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'} me-2`}></i>
+                {isLiking ? 'Liking' : isLiked ? 'Liked' : 'Like'}
               </button>
             )}
 
@@ -465,7 +555,7 @@ useEffect(() => {
                 className='btn btn-light flex-grow-1 d-flex align-items-center justify-content-center'
                 onClick={() => toggleComments(post.postId)}
               >
-                <i className='bi bi-chat me-2'></i> Comment ({post.comments?.length || 0})
+                <i className='bi bi-chat me-2'></i> Comment 
               </button>
             )}
 
@@ -547,8 +637,8 @@ useEffect(() => {
           className='modal show d-block'
           tabIndex={-1}
           role='dialog'
-          style={{ 
-            backgroundColor: 'rgba(0,0,0,0.5)', 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
             position: 'fixed',
             top: 0,
             left: 0,
@@ -557,7 +647,11 @@ useEffect(() => {
             zIndex: 1050 // Đảm bảo modal hiển thị trên tất cả các phần tử khác
           }}
         >
-          <div className='modal-dialog modal-dialog-centered' role='document' style={{ maxWidth: '500px', margin: '0 auto' }}>
+          <div
+            className='modal-dialog modal-dialog-centered'
+            role='document'
+            style={{ maxWidth: '500px', margin: '0 auto' }}
+          >
             <div className='modal-content' style={{ maxHeight: '90vh', overflow: 'hidden' }}>
               <div className='modal-header'>
                 <h5 className='modal-title'>Share post</h5>
@@ -612,10 +706,7 @@ useEffect(() => {
                 </div>
 
                 {/* Scroll area for content and shared post */}
-                <div
-                  className='post-content-scroll'
-                  style={{ maxHeight: '350px', overflowY: 'auto', padding: '16px' }}
-                >
+                <div className='post-content-scroll' style={{ maxHeight: '350px', overflowY: 'auto', padding: '16px' }}>
                   <textarea
                     className='form-control border-0 mb-3'
                     value={shareContent}
@@ -671,8 +762,8 @@ useEffect(() => {
                             {post.attachments.filter((att) => att.fileType.startsWith('image/')).length > 1 && (
                               <div className='mt-1 text-center'>
                                 <small className='text-muted'>
-                                  +{post.attachments.filter((att) => att.fileType.startsWith('image/')).length - 1}{' '}
-                                  more images
+                                  +{post.attachments.filter((att) => att.fileType.startsWith('image/')).length - 1} more
+                                  images
                                 </small>
                               </div>
                             )}
@@ -723,14 +814,14 @@ useEffect(() => {
           className='modal show d-block'
           tabIndex={-1}
           role='dialog'
-          style={{ 
-            backgroundColor: 'rgba(0,0,0,0.5)', 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 1050 
+            zIndex: 1050
           }}
         >
           <div className='modal-dialog modal-dialog-centered' role='document'>
@@ -829,11 +920,7 @@ useEffect(() => {
               </div>
 
               <div className='modal-footer d-flex justify-content-between'>
-                <button
-                  type='button'
-                  className='btn btn-outline-secondary'
-                  onClick={() => setShowAudienceModal(false)}
-                >
+                <button type='button' className='btn btn-outline-secondary' onClick={() => setShowAudienceModal(false)}>
                   Cancel
                 </button>
                 <button
@@ -863,14 +950,14 @@ useEffect(() => {
           className='modal show d-block'
           tabIndex={-1}
           role='dialog'
-          style={{ 
-            backgroundColor: 'rgba(0,0,0,0.5)', 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 1050 
+            zIndex: 1050
           }}
         >
           <div className='modal-dialog modal-dialog-centered modal-dialog-scrollable' role='document'>
@@ -884,7 +971,7 @@ useEffect(() => {
                   aria-label='Close'
                 ></button>
               </div>
-              
+
               <div className='modal-body p-0' style={{ maxHeight: '70vh' }}>
                 {loadingShares && sharedUsers.length === 0 ? (
                   <div className='text-center py-4'>
@@ -968,14 +1055,14 @@ useEffect(() => {
           className='modal show d-block'
           tabIndex={-1}
           role='dialog'
-          style={{ 
-            backgroundColor: 'rgba(0,0,0,0.5)', 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 1050 
+            zIndex: 1050
           }}
         >
           <div className='modal-dialog modal-dialog-centered modal-dialog-scrollable' role='document'>
@@ -989,11 +1076,18 @@ useEffect(() => {
                   aria-label='Close'
                 ></button>
               </div>
-              
+
               <div className='modal-body p-0' style={{ maxHeight: '70vh' }}>
-                {post.likedUsers.length > 0 ? (
+                {loadingLikedUsers && likedUsers.length === 0 ? (
+                  <div className='text-center py-4'>
+                    <div className='spinner-border text-primary' role='status'>
+                      <span className='visually-hidden'>Loading...</span>
+                    </div>
+                    <p className='mt-2'>Loading likes...</p>
+                  </div>
+                ) : likedUsers.length > 0 ? (
                   <ul className='list-group list-group-flush'>
-                    {post.likedUsers.map((user) => (
+                    {likedUsers.map((user) => (
                       <li key={user.userId} className='list-group-item'>
                         <div className='d-flex align-items-center p-2'>
                           <img
@@ -1006,10 +1100,15 @@ useEffect(() => {
                               ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/40'
                             }}
                           />
-                          <div>
+                          <div className='flex-grow-1'>
                             <h6 className='mb-0'>{user.displayName}</h6>
                             <small className='text-muted'>@{user.username}</small>
                           </div>
+
+                          {/* Hiển thị nút Follow nếu người dùng hiện tại không phải là người này */}
+                          {currentUser && currentUser.userId !== user.userId && (
+                            <button className='btn btn-sm btn-outline-primary rounded-pill'>Follow</button>
+                          )}
                         </div>
                       </li>
                     ))}
@@ -1032,14 +1131,14 @@ useEffect(() => {
           className='modal show d-block'
           tabIndex={-1}
           role='dialog'
-          style={{ 
-            backgroundColor: 'rgba(0,0,0,0.5)', 
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 1050 
+            zIndex: 1050
           }}
         >
           <div className='modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg' role='document'>
@@ -1053,7 +1152,7 @@ useEffect(() => {
                   aria-label='Close'
                 ></button>
               </div>
-              
+
               <div className='modal-body' style={{ maxHeight: '70vh' }}>
                 {/* Post preview */}
                 <div className='post-preview mb-4'>

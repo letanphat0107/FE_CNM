@@ -17,7 +17,7 @@ export const URL_GET_LIST_SHARED_FEED = 'ola-chat/api/posts'
 // Interact with Feed
 export const URL_LIKE_FEED = 'ola-chat/api/posts'
 export const URL_UNLIKE_FEED = 'ola-chat/api/posts'
-export const URL_GET_LIST_USER_LIKED = 'ola-chat/api/posts/3/likes'
+export const URL_GET_LIST_USER_LIKED = 'ola-chat/api/posts'
 
 // Comment
 export const URL_REPLY_FEED = 'ola-chat/api/posts/15/comments'
