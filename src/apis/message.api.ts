@@ -7,6 +7,7 @@ import config from 'src/constants/config'
 import { SuccessResponse } from 'src/types/utils.type'
 
 export const BASE_URL = 'ola-chat/api/conversations'
+export const URL_DELETE_MESSAGE = 'ola-chat/api/messages'
 
 let stompClient: Client | null = null
 
@@ -81,6 +82,9 @@ const messageAPI = {
   // Lấy Client hiện tại (nếu cần sử dụng bên ngoài)
   getStompClient() {
     return stompClient
+  },
+  deleteMessage( messageId: string) {
+    return http.delete<SuccessResponse<null>>(`${URL_DELETE_MESSAGE}/messages/${messageId}/hiddenForUser`)
   }
 }
 
