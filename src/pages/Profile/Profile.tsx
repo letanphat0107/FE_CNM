@@ -101,15 +101,15 @@ export default function Profile() {
                       <div className='d-flex gap-4 text-center'>
                         <div className='px-2'>
                           <div className='fw-bold fs-4'>2</div>
-                          <div className='text-secondary'>Posts</div>
+                          <div className='text-secondary'>Bài đăng</div>
                         </div>
                         <div className='px-2'>
                           <div className='fw-bold fs-4'>0</div>
-                          <div className='text-secondary'>Followers</div>
+                          <div className='text-secondary'>Người theo dõi</div>
                         </div>
                         <div className='px-2'>
                           <div className='fw-bold fs-4'>0</div>
-                          <div className='text-secondary'>Following</div>
+                          <div className='text-secondary'>Đang theo dõi</div>
                         </div>
                       </div>
                     </div>
