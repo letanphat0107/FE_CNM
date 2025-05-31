@@ -410,25 +410,30 @@ export default function HomePage() {
                 </div>
                 <div className='d-flex justify-content-between align-items-center'>
                   <div className='d-flex align-items-center ms-5'>
-                    <button
-                      className='btn d-flex align-items-center'
-                      onClick={() => {
-                        setShowPostModal(true)
-                        setIsMediaTabActive(true)
-                      }}
-                    >
-                      <img
-                        src='https://res.cloudinary.com/dm5ulzy7n/image/upload/v1748540582/Media--f6775c54-bd58-4ec1-9515-2cf9de95da09.png'
-                        alt='Media'
-                        className='me-2'
-                        width='20'
-                        height='20'
-                      />
-                      Add Media
-                    </button>
+                  <button
+                    className='btn d-flex align-items-center'
+                    onClick={() => {
+                    setShowPostModal(true)
+                    setIsMediaTabActive(true)
+                    }}
+                  >
+                    <img
+                    src='https://res.cloudinary.com/dm5ulzy7n/image/upload/v1748540582/Media--f6775c54-bd58-4ec1-9515-2cf9de95da09.png'
+                    alt='Media'
+                    className='me-2'
+                    width='20'
+                    height='20'
+                    />
+                    Add Media
+                  </button>
+                  
+                  <button className='btn d-flex align-items-center ml-3'>
+                    <i className='fas fa-video text-danger me-2'></i>
+                    Livestream
+                  </button>
                   </div>
                   <button className='btn btn-primary rounded-pill px-4' onClick={() => setShowPostModal(true)}>
-                    Post
+                  Post
                   </button>
                 </div>
               </div>

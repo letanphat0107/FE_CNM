@@ -6,280 +6,243 @@ import axios from 'axios'
 import { AppContext } from 'src/contexts/app.context'
 import { useNavigate } from 'react-router-dom'
 import { setProfileToLS, setAccessTokenToLS, setRefreshTokenToLS } from 'src/utils/auth'
+import { toast } from 'react-toastify'
 import config from 'src/constants/config'
-import { set } from 'lodash'
+import { PauseIcon } from '@giphy/react-components'
 
 export default function LoginWithQR() {
+  // State để quản lý QR code và thông tin người dùng
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [userInfo, setUserInfo] = useState<any | null>(null)
   const [stompClient, setStompClient] = useState<any | null>(null)
-  const [expiryTime, setExpiryTime] = useState<number | null>(null)
-  const [timeLeft, setTimeLeft] = useState<number | null>(null)
-  const [isExpired, setIsExpired] = useState<boolean>(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<boolean>(false)
+
+  // Context và navigation
   const { setIsAuthenticated, setProfile } = useContext(AppContext)
   const navigate = useNavigate()
 
-  const getBrowserInfo = () => {
-    const ua = navigator.userAgent
-    let browserName = 'Unknown'
-    if (ua.indexOf('Chrome') > -1) browserName = 'Chrome'
-    else if (ua.indexOf('Safari') > -1) browserName = 'Safari'
-    else if (ua.indexOf('Firefox') > -1) browserName = 'Firefox'
-    else if (ua.indexOf('MSIE') > -1 || ua.indexOf('Trident/') > -1) browserName = 'Internet Explorer'
-    else if (ua.indexOf('Edge') > -1) browserName = 'Edge'
-    return { browserName, deviceName: navigator.platform || 'Unknown Device' }
-  }
-
-  const getLocationHint = () => {
-    const timezoneOffset = new Date().getTimezoneOffset() / -60
-    return `GMT${timezoneOffset >= 0 ? '+' : ''}${timezoneOffset}`
-  }
-
+  // Tạo mã QR mới
   const generateQrCode = async () => {
     try {
+      // Bắt đầu loading và reset dữ liệu
       setLoading(true)
-      setIsExpired(false)
       setUserInfo(null)
-      if (stompClient && stompClient.connected) stompClient.disconnect()
 
-      const { browserName, deviceName } = getBrowserInfo()
-      const locationHint = getLocationHint()
-      const deviceId = localStorage.getItem('device_id') || `web_${Math.random().toString(36).substring(2, 15)}`
-      if (!localStorage.getItem('device_id')) localStorage.setItem('device_id', deviceId)
+      // Ngắt kết nối WebSocket trước đó nếu có
+      if (stompClient && stompClient.connected) {
+        console.log('Disconnecting previous WebSocket connection')
+        stompClient.disconnect()
+      }
 
-      const res = await axios.post(`${config.baseUrl}/ola-chat/auth/qr-login/create`, {
-        deviceName: `${browserName} on ${deviceName}`,
-        deviceId,
-        locationHint
+      console.log('Creating QR code session...')
+      // Gọi API tạo QR code session
+      const res = await axios.post(`${config.baseUrl || 'http://localhost:8081'}/ola-chat/auth/qr-login/create`, {
+        deviceName: 'Web Browser',
+        deviceId: `web_${Math.random().toString(36).substring(2, 9)}`,
+        locationHint: window.navigator.language || 'Unknown'
       })
 
-      const data = res.data.data
-      setQrUrl(data)
+      // Kiểm tra và log kết quả
+      console.log('API Response:', res.data)
 
-      const urlObj = new URL(data)
-      const sid = urlObj.searchParams.get('sessionId')
-      setSessionId(sid)
+      // Lưu URL QR code từ response
+      const url = res.data.data
+      if (!url) {
+        throw new Error('Invalid response: missing QR URL')
+      }
 
-      const expiryInSeconds = data.expiresIn || 120
-      setExpiryTime(Date.now() + expiryInSeconds * 1000)
+      setQrUrl(url)
+      console.log('QR code URL:', url)
 
-      // Log khi thành công
-      console.log('QR code URL:', data)
-      console.log('Session ID:', sid)
+      // Trích xuất sessionId từ URL
+      try {
+        const urlObj = new URL(url)
+        const sid = urlObj.searchParams.get('sessionId')
+        if (!sid) throw new Error('No sessionId in QR URL')
+
+        setSessionId(sid)
+        console.log('Session ID:', sid)
+      } catch (e) {
+        console.error('Error extracting sessionId:', e)
+        throw new Error('Failed to process QR URL')
+      }
     } catch (err) {
-      console.error('Failed to create QR session', err)
-      setQrUrl(null)
-      setSessionId(null)
+      console.error('Failed to create QR session:', err)
+      toast.error('Không thể tạo mã QR. Vui lòng thử lại sau.')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    if (!expiryTime) return
-    const timer = setInterval(() => {
-      const remaining = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000))
-      setTimeLeft(remaining)
-      if (remaining <= 0) {
-        setIsExpired(true)
-        clearInterval(timer)
-      }
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [expiryTime])
-
+  // Khởi tạo QR code khi component mount
   useEffect(() => {
     generateQrCode()
+
+    // Cleanup khi unmount
+    return () => {
+      if (stompClient && stompClient.connected) {
+        stompClient.disconnect()
+      }
+    }
   }, [])
 
+  // Thiết lập kết nối WebSocket khi có sessionId
   useEffect(() => {
     if (!sessionId) return
-    const socket = new SockJS(`${config.baseUrl}/ola-chat/ws`)
+
+    console.log('Setting up WebSocket connection for session:', sessionId)
+
+    // Tạo kết nối SockJS và STOMP client
+    const socket = new SockJS(`${config.baseUrl || 'http://localhost:8081'}/ola-chat/ws`)
     const client = Stomp.over(socket)
+
+    // Tắt debug log của STOMP
     client.debug = () => {}
 
+    // Kết nối đến server
     client.connect(
       {},
+      // Success callback
       () => {
+        console.log('WebSocket connected successfully')
+
+        // Subscribe đến channel riêng cho session này
         client.subscribe(`/user/queue/qr-login/${sessionId}`, (message) => {
           try {
             const payload = JSON.parse(message.body)
-            if (payload.type === 'USER_INFO_PREVIEW') setUserInfo(payload.user)
-            else if (payload.type === 'QR_LOGIN_SUCCESS') {
-              const { accessToken, refreshToken, user } = payload
-             console.log("Received message:", payload);
-              setAccessTokenToLS(accessToken)
-              setRefreshTokenToLS(refreshToken)
+            console.log('Received WebSocket message:', payload)
+            setAccessTokenToLS(payload.accessToken)
+            setRefreshTokenToLS(payload.refreshToken)
+            setIsAuthenticated(true)
+
+            navigate('/')
+
+            if (payload.type === 'USER_INFO_PREVIEW') {
+              // Hiển thị thông tin người dùng đang quét QR
+              console.log('User scanning QR:', payload.user)
+              setUserInfo(payload.user)
+            } else if (payload.type === 'QR_LOGIN_SUCCESS') {
+              // Xử lý đăng nhập thành công
+              console.log('Login successful!', payload)
+
+              // Trích xuất token từ payload
+              // QUAN TRỌNG: Đây là phần đã sửa để đảm bảo nhận đúng cấu trúc token
+              const token = payload.token
+              const user = payload.user
+
+              if (!token || !user) {
+                console.error('Missing authentication data:', { token, user })
+                toast.error('Thông tin đăng nhập không hợp lệ')
+                return
+              }
+
+              console.log('Authentication data:', { token, user })
+
+              // Lưu token và thông tin người dùng
+              setAccessTokenToLS(token.accessToken)
+              if (token.refreshToken) {
+                setRefreshTokenToLS(token.refreshToken)
+              }
               setProfileToLS(user)
+
+              // Cập nhật trạng thái đăng nhập
               setIsAuthenticated(true)
               setProfile(user)
-              navigate('/')
+
+              // Thông báo thành công
+              toast.success('Đăng nhập thành công!')
+
+              // Chuyển hướng đến trang chủ
+              setTimeout(() => navigate('/'), 1000)
             }
           } catch (error) {
             console.error('Error processing WebSocket message:', error)
           }
         })
       },
-      (error: any) => console.error('WebSocket connection error:', error)
+      // Error callback
+      (error: any) => {
+        console.error('WebSocket connection error:', error)
+        toast.error('Lỗi kết nối. Vui lòng thử lại sau.')
+      }
     )
 
+    // Lưu STOMP client để có thể disconnect sau này
     setStompClient(client)
+
+    // Cleanup khi effect chạy lại hoặc component unmount
     return () => {
-      if (client && client.connected) client.disconnect(() => console.log('WebSocket disconnected'))
+      if (client && client.connected) {
+        console.log('Disconnecting WebSocket')
+        client.disconnect()
+      }
     }
   }, [sessionId, setIsAuthenticated, setProfile, navigate])
 
-  const formatTimeLeft = (seconds: number | null) => {
-    if (!seconds) return '00:00'
-    const mins = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, '0')
-    const secs = (seconds % 60).toString().padStart(2, '0')
-    return `${mins}:${secs}`
-  }
-
   return (
-    <div className='qr-login-container'>
-      <div className='container'>
-        <div className='row justify-content-center'>
-          <div className='col-md-6 col-lg-5'>
-            <div className='card shadow my-5'>
-              <div className='card-body p-4 text-center'>
-                <h3 className='mb-4'>Đăng nhập với QR Code</h3>
+    <div className='container py-5'>
+      <div className='row justify-content-center'>
+        <div className='col-md-6'>
+          <div className='card shadow'>
+            <div className='card-body text-center p-5'>
+              <h2 className='mb-4'>Đăng nhập bằng QR Code</h2>
 
-                <div className='qr-code-wrapper position-relative mb-3'>
-                  {isExpired ? (
-                    <div className='expired-overlay d-flex flex-column align-items-center justify-content-center'>
-                      <div className='expired-message'>
-                        <i className='bi bi-clock-history fs-1 text-secondary mb-2'></i>
-                        <p className='fs-5 fw-bold text-secondary'>Mã QR đã hết hạn</p>
-                        <button className='btn btn-primary' onClick={generateQrCode}>
-                          <i className='bi bi-arrow-clockwise me-2'></i>
-                          Tạo mã QR mới
-                        </button>
-                      </div>
-                    </div>
-                  ) : qrUrl ? (
-                    <QRCodeSVG
-                      value={qrUrl}
-                      size={256}
-                      level='H'
-                      includeMargin={true}
-                      imageSettings={{
-                        src: 'https://i.imgur.com/i9QFbVN.png',
-                        x: undefined,
-                        y: undefined,
-                        height: 40,
-                        width: 40,
-                        excavate: true
-                      }}
-                    />
-                  ) : (
-                    <div className='qr-loader d-flex justify-content-center align-items-center' style={{ height: 256 }}>
-                      <div className='spinner-border text-primary' role='status'>
-                        <span className='visually-hidden'>Đang tải...</span>
-                      </div>
-                    </div>
-                  )}
+              {qrUrl ? (
+                <div className='mb-4'>
+                  <QRCodeSVG value={qrUrl} size={256} level='H' includeMargin={true} className='border p-2 rounded' />
+                  <p className='mt-3'>Quét QR bằng ứng dụng Ola Chat để đăng nhập</p>
                 </div>
-
-                {!isExpired && timeLeft !== null && (
-                  <div className='expiry-timer mb-3'>
-                    <span className='badge bg-light text-dark'>
-                      <i className='bi bi-clock me-1'></i>
-                      Hết hạn trong {formatTimeLeft(timeLeft)}
-                    </span>
+              ) : (
+                <div className='d-flex justify-content-center align-items-center' style={{ height: '256px' }}>
+                  <div className='spinner-border text-primary' role='status'>
+                    <span className='visually-hidden'>Đang tạo QR...</span>
                   </div>
+                </div>
+              )}
+
+              <button className='btn btn-primary' onClick={generateQrCode} disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className='spinner-border spinner-border-sm me-2' role='status' aria-hidden='true'></span>
+                    Đang tạo...
+                  </>
+                ) : (
+                  'Tạo QR mới'
                 )}
+              </button>
 
-                <p className='text-muted mb-4'>
-                  Mở ứng dụng Ola Chat trên điện thoại và quét mã QR để đăng nhập tự động.
-                </p>
-
-                {userInfo && (
-                  <div className='user-preview alert alert-info d-flex align-items-center'>
+              {userInfo && (
+                <div className='mt-4 p-3 border rounded bg-light'>
+                  <h5>Người dùng đang quét:</h5>
+                  <div className='d-flex align-items-center justify-content-center'>
                     <img
-                      src={userInfo.avatar || 'https://via.placeholder.com/64'}
-                      alt='User Avatar'
+                      src={userInfo.avatar}
+                      alt='avatar'
                       className='rounded-circle me-3'
                       style={{ width: 64, height: 64 }}
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/64'
+                      }}
                     />
                     <div className='text-start'>
-                      <div className='fw-bold'>{userInfo.displayName}</div>
-                      <div className='text-muted'>@{userInfo.username}</div>
-                      <small>Xác nhận đăng nhập trên thiết bị di động của bạn</small>
+                      <p className='mb-0'>
+                        <strong>{userInfo.displayName || userInfo.name}</strong>
+                      </p>
+                      <small className='text-muted'>@{userInfo.username}</small>
                     </div>
                   </div>
-                )}
-
-                <div className='d-flex justify-content-center'>
-                  <button className='btn btn-outline-primary mt-3' onClick={generateQrCode}>
-                    {loading ? (
-                      <>
-                        <span className='spinner-border spinner-border-sm me-2' role='status' aria-hidden='true'></span>
-                        Đang tạo...
-                      </>
-                    ) : (
-                      <>
-                        <i className='bi bi-arrow-repeat me-2'></i>
-                        Tạo mã QR mới
-                      </>
-                    )}
-                  </button>
                 </div>
-              </div>
-              <div className='card-footer bg-light text-center py-3'>
-                <small className='text-muted'>
-                  Hoặc quay lại{' '}
-                  <a href='/login' className='text-decoration-none'>
-                    đăng nhập thông thường
-                  </a>
-                </small>
-              </div>
+              )}
+            </div>
+            <div className='card-footer text-center'>
+              <p className='mb-0'>
+                Hoặc <a href='/login'>đăng nhập</a> bằng phương thức thông thường
+              </p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* CSS styles for QR code display */}
-      <style>{`
-        .qr-code-wrapper {
-          margin: 0 auto;
-          width: 256px;
-          height: 256px;
-          background-color: white;
-          border-radius: 8px;
-          overflow: hidden;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        
-        .expired-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(255, 255, 255, 0.9);
-          z-index: 10;
-          border-radius: 8px;
-        }
-        
-        .expired-message {
-          padding: 20px;
-          text-align: center;
-        }
-        
-        @media (max-width: 576px) {
-          .qr-code-wrapper {
-            width: 200px;
-            height: 200px;
-          }
-        }
-      `}</style>
     </div>
   )
 }
