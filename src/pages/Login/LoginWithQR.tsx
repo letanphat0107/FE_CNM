@@ -111,14 +111,10 @@ export default function LoginWithQR() {
         client.subscribe(`/user/queue/qr-login/${sessionId}`, (message) => {
           try {
             const payload = JSON.parse(message.body)
-            console.log('Received WebSocket message:', payload)
-            setAccessTokenToLS(payload.accessToken)
-            setRefreshTokenToLS(payload.refreshToken)
-            setIsAuthenticated(true)
 
-            localStorage.setItem('accessToken', payload.accessToken)
-            localStorage.setItem('refreshToken', payload.refreshToken)
-            localStorage.setItem('profile', JSON.stringify(payload.user))
+            // localStorage.setItem('accessToken', payload.accessToken)
+            // localStorage.setItem('refreshToken', payload.refreshToken)
+            // localStorage.setItem('profile', JSON.stringify(payload.user))
 
             navigate('/')
 
@@ -129,6 +125,10 @@ export default function LoginWithQR() {
             } else if (payload.type === 'QR_LOGIN_SUCCESS') {
               // Xử lý đăng nhập thành công
               console.log('Login successful!', payload)
+              console.log('Received WebSocket message:', payload)
+              setAccessTokenToLS(payload.accessToken || '')
+              setRefreshTokenToLS(payload.refreshToken || '')
+              setIsAuthenticated(true)
 
               // Trích xuất token từ payload
               // QUAN TRỌNG: Đây là phần đã sửa để đảm bảo nhận đúng cấu trúc token
