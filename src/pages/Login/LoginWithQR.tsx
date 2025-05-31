@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom'
 import { setProfileToLS, setAccessTokenToLS, setRefreshTokenToLS } from 'src/utils/auth'
 import { toast } from 'react-toastify'
 import config from 'src/constants/config'
-import { PauseIcon } from '@giphy/react-components'
 
 export default function LoginWithQR() {
   // State để quản lý QR code và thông tin người dùng
@@ -111,58 +110,53 @@ export default function LoginWithQR() {
         client.subscribe(`/user/queue/qr-login/${sessionId}`, (message) => {
           try {
             const payload = JSON.parse(message.body)
-
-            // localStorage.setItem('accessToken', payload.accessToken)
-            // localStorage.setItem('refreshToken', payload.refreshToken)
-            // localStorage.setItem('profile', JSON.stringify(payload.user))
-
+            console.log('Received WebSocket message:', payload)
 
             if (payload.type === 'USER_INFO_PREVIEW') {
               // Hiển thị thông tin người dùng đang quét QR
               console.log('User scanning QR:', payload.user)
               setUserInfo(payload.user)
-            } else if (payload.type === 'QR_LOGIN_SUCCESS') {
-              // Xử lý đăng nhập thành công
-              console.log('Login successful!', payload)
-              console.log('Received WebSocket message:', payload)
-              setAccessTokenToLS(payload.accessToken || '')
-              setRefreshTokenToLS(payload.refreshToken || '')
-              setIsAuthenticated(true)
-              setUserInfo(payload.user)
-            navigate('/')
+            } else if (payload.type === 'QR_LOGIN_SUCCESS' || !payload.type) {
+              // Từ logs, có vẻ như server không gửi payload.type mà
+              // gửi trực tiếp accessToken/refreshToken/user
 
-              // Trích xuất token từ payload
-              // QUAN TRỌNG: Đây là phần đã sửa để đảm bảo nhận đúng cấu trúc token
-              const token = payload.token
+              // Xác định các biến và thông tin cần thiết
+              // Kiểm tra xem accessToken nằm ở đâu trong payload
+              const accessToken = payload.accessToken || payload.token?.accessToken
+              const refreshToken = payload.refreshToken || payload.token?.refreshToken
               const user = payload.user
 
-              if (!token || !user) {
-                console.error('Missing authentication data:', { token, user })
+              console.log('Auth data received:', {
+                accessToken: accessToken ? `${accessToken.substring(0, 20)}...` : undefined,
+                refreshToken: refreshToken ? 'present' : undefined,
+                user
+              })
+
+              if (accessToken && user) {
+                // Lưu token và thông tin người dùng
+                setAccessTokenToLS(accessToken)
+                if (refreshToken) {
+                  setRefreshTokenToLS(refreshToken)
+                }
+                setProfileToLS(user)
+
+                // Cập nhật trạng thái đăng nhập
+                setIsAuthenticated(true)
+                setProfile(user)
+
+                // Thông báo thành công
+                toast.success('Đăng nhập thành công!')
+
+                // Chuyển hướng đến trang chủ
+                setTimeout(() => navigate('/'), 1000)
+              } else {
+                console.error('Missing required authentication data:', { accessToken, user })
                 toast.error('Thông tin đăng nhập không hợp lệ')
-                return
               }
-
-              console.log('Authentication data:', { token, user })
-
-              // Lưu token và thông tin người dùng
-              setAccessTokenToLS(token.accessToken)
-              if (token.refreshToken) {
-                setRefreshTokenToLS(token.refreshToken)
-              }
-              setProfileToLS(user)
-
-              // Cập nhật trạng thái đăng nhập
-              setIsAuthenticated(true)
-              setProfile(user)
-
-              // Thông báo thành công
-              toast.success('Đăng nhập thành công!')
-
-              // Chuyển hướng đến trang chủ
-              setTimeout(() => navigate('/'), 1000)
             }
           } catch (error) {
             console.error('Error processing WebSocket message:', error)
+            toast.error('Lỗi xử lý dữ liệu đăng nhập')
           }
         })
       },
