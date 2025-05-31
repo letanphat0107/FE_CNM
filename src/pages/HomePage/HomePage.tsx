@@ -424,11 +424,11 @@ export default function HomePage() {
                         width='20'
                         height='20'
                       />
-                      Add Media
+                      Thêm hình ảnh/video
                     </button>
                   </div>
                   <button className='btn btn-primary rounded-pill px-4' onClick={() => setShowPostModal(true)}>
-                    Post
+                    Đăng
                   </button>
                 </div>
               </div>
@@ -742,7 +742,7 @@ export default function HomePage() {
           <div className='col-md-4'>
             <div className='card'>
               <div className='card-header bg-white'>
-                <h5 className='mb-0'>Suggested Friends</h5>
+                <h5 className='mb-0'>Đề xuất bạn bè</h5>
               </div>
               <div className='card-body p-0'>
                 <ul className='list-group list-group-flush'>
