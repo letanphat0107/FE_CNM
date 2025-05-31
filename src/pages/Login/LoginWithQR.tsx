@@ -116,7 +116,6 @@ export default function LoginWithQR() {
             // localStorage.setItem('refreshToken', payload.refreshToken)
             // localStorage.setItem('profile', JSON.stringify(payload.user))
 
-            navigate('/')
 
             if (payload.type === 'USER_INFO_PREVIEW') {
               // Hiển thị thông tin người dùng đang quét QR
@@ -129,6 +128,8 @@ export default function LoginWithQR() {
               setAccessTokenToLS(payload.accessToken || '')
               setRefreshTokenToLS(payload.refreshToken || '')
               setIsAuthenticated(true)
+              setUserInfo(payload.user)
+            navigate('/')
 
               // Trích xuất token từ payload
               // QUAN TRỌNG: Đây là phần đã sửa để đảm bảo nhận đúng cấu trúc token
