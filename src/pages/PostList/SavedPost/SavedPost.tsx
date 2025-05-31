@@ -235,26 +235,26 @@ export default function SavedPosts() {
           <div className='col-md-4'>
             <div className='card'>
               <div className='card-header bg-white'>
-                <h5 className='mb-0'>Collection Statistics</h5>
+                <h5 className='mb-0'>Thống kê bộ sưu tập</h5>
               </div>
               <div className='card-body'>
                 <div className='d-flex justify-content-between mb-3'>
                   <div className='text-center'>
                     <h5>{statsData.totalPosts}</h5>
-                    <div className='text-muted small'>Saved Posts</div>
+                    <div className='text-muted small'>Bài đã lưu</div>
                   </div>
                   <div className='text-center'>
                     <h5>{statsData.totalLikes}</h5>
-                    <div className='text-muted small'>Total Likes</div>
+                    <div className='text-muted small'>Tổng số live</div>
                   </div>
                   <div className='text-center'>
                     <h5>{statsData.totalComments}</h5>
-                    <div className='text-muted small'>Comments</div>
+                    <div className='text-muted small'>Bình luận</div>
                   </div>
                 </div>
                 <hr />
                 <div className='mb-3'>
-                  <h6 className='mb-2'>Content Categories</h6>
+                  <h6 className='mb-2'>Phân loại nội dung</h6>
                   {/* Simple placeholder for categories */}
                   {(() => {
                     // Determine post types (has images, has videos, text-only)
@@ -300,13 +300,13 @@ export default function SavedPosts() {
                         </div>
                         <div className='d-flex justify-content-between small'>
                           <span>
-                            <i className='bi bi-image me-1 text-primary'></i> With Images
+                            <i className='bi bi-image me-1 text-primary'></i> Với hình ảnh
                           </span>
                           <span>
-                            <i className='bi bi-camera-video me-1 text-success'></i> With Videos
+                            <i className='bi bi-camera-video me-1 text-success'></i> Với video
                           </span>
                           <span>
-                            <i className='bi bi-file-text me-1 text-info'></i> Text Only
+                            <i className='bi bi-file-text me-1 text-info'></i> Chỉ văn bản
                           </span>
                         </div>
                       </div>
