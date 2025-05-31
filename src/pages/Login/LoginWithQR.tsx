@@ -116,6 +116,10 @@ export default function LoginWithQR() {
             setRefreshTokenToLS(payload.refreshToken)
             setIsAuthenticated(true)
 
+            localStorage.setItem('accessToken', payload.accessToken)
+            localStorage.setItem('refreshToken', payload.refreshToken)
+            localStorage.setItem('profile', JSON.stringify(payload.user))
+
             navigate('/')
 
             if (payload.type === 'USER_INFO_PREVIEW') {
