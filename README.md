@@ -43,8 +43,8 @@ Ola Chat is a modern real-time messaging web application with rich features such
 ### Installation
 
 ```bash
-git clone https://github.com/letanphat0107/FE_KTPM.git
-cd devPhat
+git clone https://github.com/letanphat0107/FE_CNM.git
+cd feature/authentication
 npm install
 # or
 yarn install
