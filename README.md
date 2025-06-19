@@ -1,59 +1,51 @@
-# Getting Started with Create React App
+# Ola Chat - Real-time Messaging Platform (Frontend)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Ola Chat is a modern real-time messaging web application with rich features such as instant messaging, group chat, media sharing, push notifications, and secure authentication.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Real-time messaging with WebSocket (STOMP/SockJS)
+- Multi-factor authentication (email, phone, QR code)
+- Push notifications via Firebase Cloud Messaging (FCM)
+- Friend and group management
+- Media sharing (images, videos, files) with AI-powered content moderation
+- Personal profile and account settings
+- Social features: posts, likes, comments, and sharing
+- Video/audio calling (WebRTC)
+- Responsive UI for both desktop and mobile
+- Protected routes and session management with JWT
 
-### `npm start`
+## Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Frontend Framework:** React, TypeScript
+- **State Management:** React Context API, React Query
+- **UI/CSS:** Bootstrap, SCSS, CSS-in-JS
+- **Routing:** React Router v6
+- **API Communication:** Axios, RESTful API
+- **Real-time:** WebSocket, SockJS, STOMP
+- **Authentication:** JWT, localStorage
+- **Media Handling:** File upload, preview, image processing
+- **AI Integration:** TensorFlow.js, NSFW.js
+- **Push Notification:** Firebase Cloud Messaging (FCM)
+- **Form Management:** Formik, React Hook Form
+- **Testing:** Jest, React Testing Library
+- **Build Tools:** Vite, npm/yarn
+- **Code Quality:** ESLint, Prettier
+- **CI/CD:** GitHub Actions
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js (>= 16)
+- npm or yarn
 
-### `npm run build`
+### Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-## Công nghệ sử dụng
-
-- UI / CSS Library: Tailwindcss + HeadlessUI, Bootstrap
-- State Management: React Query cho async state và React Context cho state thường
-- Form Management: React Hook Form
-- Router: React Router
-- Build tool: Vite
-- API: Rest API dựa trên server 
-- Hỗ trợ đa ngôn ngữ với react.i18next
-- Hỗ trợ SEO với React Helmet
-- Mô hình hóa các component với story book
-- Unit Test
+```bash
+git clone https://github.com/letanphat0107/FE_KTPM.git
+cd devPhat
+npm install
+# or
+yarn install
+```
